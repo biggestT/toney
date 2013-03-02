@@ -7,19 +7,18 @@
 	<meta name="keywords" content="Chinese,tones,Web audio,JavaScript">
 	<meta name="author" content="Tor Nilsson Öhrn">
     <title>Toney</title>
-    <script type="text/javascript" src="jquery-1.8.3.min.js"></script>
-    <script type="text/javascript" src="toney.js"></script>
+    <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="js/toney.js"></script>
 	<link type="text/css" rel="stylesheet" href="toney.css">
 </head>
 <script>
 	$(function() {
-		line = new ToneLine(1024);
-		console.log("yeye");
+		line = new ToneModel(1024, 8, '#toney');
 	});
 </script>
 <body>
 	<div id="toneLine"></div>
-	<div id="message1"></div>
+	<canvas id="toney" width="800px" height="200px"></canvas>
 	<div id="message2"></div>
 	<div id="message3"></div>
 </body>

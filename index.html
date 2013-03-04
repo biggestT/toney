@@ -8,17 +8,23 @@
 	<meta name="author" content="Tor Nilsson Öhrn">
     <title>Toney</title>
     <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-    <script type="text/javascript" src="js/toney.js"></script>
+    <script type="text/javascript" src="js/observerList.js"></script>
+    <script type="text/javascript" src="js/toneModel.js"></script>
+    <script type="text/javascript" src="js/toneLine.js"></script>
 	<link type="text/css" rel="stylesheet" href="toney.css">
 </head>
 <script>
 	$(function() {
-		line = new ToneModel(1024, 8, '#toney');
+		var model, line;
+		
+		model = new ToneModel(2048, 100);
+		line = new ToneLine('#toney');
+		model.addObserver(line);
 	});
 </script>
 <body>
 	<div id="toneLine"></div>
-	<canvas id="toney" width="800px" height="200px"></canvas>
+	<canvas id="toney" width="800px" height="400px"></canvas>
 	<div id="message2"></div>
 	<div id="message3"></div>
 </body>

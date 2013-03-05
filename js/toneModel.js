@@ -4,9 +4,15 @@ Heavily inspired by http://phenomnomnominal.github.com/docs/tuner.html
 */
 
 ToneModel = function(r, n) {
-  this.updateRate = 20;
-  this.smoothing = 0.85;
+  this.updateRate = 16;
+  this.smoothing = 0.95;
   this.bands = n;
+
+  //  Parameters for clipping of uninteresting audio data
+  this.varThreshold = 500; 
+  this.fmin = 300;
+  this.fmax = 4000; 
+
   this.amplitudes = new Array();
   this.observers = new ObserverList();
   this.init(r);
@@ -26,20 +32,25 @@ ToneModel.prototype.init = function(r) {
   };
 
   audioContext = new AudioContext();
-
   
+  this.sampleRate = audioContext.sampleRate;
+  analyser = audioContext.createAnalyser();
+
+  analyser.fftSize = r;
+  analyser.smoothingTimeConstant = this.smoothing;
+
+  this.data = new Uint8Array(analyser.frequencyBinCount);
+
   /* Highest voice frequency is roughly 3000Hz so we need Fs to be 6000Hz 
   According to the Nyquist-Shannon sampling theorem
   Microphones sample rate is 44100Hz so we can divide that by 7 without problems
   Set fftSize/bufferlength to a value 2^n
   */
-  this.sampleRate = audioContext.sampleRate;
-  analyser = audioContext.createAnalyser();
-  analyser.fftSize = r;
-  analyser.smoothingTimeConstant = this.smoothing;
 
-  this.data = new Uint8Array(analyser.frequencyBinCount);
-  
+  // Find the indexes of the min and max frequencies in the dataarray 
+  this.fstartIndex = Math.round(this.data.length*this.fmin/this.sampleRate+1);
+  this.fstopIndex = Math.round(this.data.length*this.fmax/this.sampleRate+1);
+
   navigator.getUserMedia( {audio:true}, this.gotStream.bind(this), function(err) {console.log(err)} );
   console.log(this);
 }
@@ -87,7 +98,7 @@ ToneModel.prototype.update = function() {
   }
 }
 
-// updatemethod with non-linear binsize
+// updatemethod with different binsizes
 ToneModel.prototype.nlbs = function() {
   var data = this.data;
   var length = data.length;
@@ -99,14 +110,14 @@ ToneModel.prototype.nlbs = function() {
   var max = 0;
   for (var i = 0; i < this.bands; i++) {
     var sum = 0;
-    var binSize =  Math.floor(50*(i/this.bands));
+    var binSize =  Math.floor(20*(i/this.bands));
     // var binSize = Math.floor( length / this.bands );
     var prev = curr;
     while (curr < prev+binSize && curr < length) {
       sum += data[curr];
       curr++;
     }
-    var avg = sum / binSize;
+    var avg = sum / 20*(this.bands/i);
     // console.log(binSize);
     // add the average amplitude to the output array
     this.amplitudes[i] = avg;
@@ -120,6 +131,41 @@ ToneModel.prototype.nlbs = function() {
     this.amplitudes[i] = (this.amplitudes[i]-min)/(max-min);
   };
 }
+
+ToneModel.prototype.getTone = function() {
+  var data = this.data;
+  analyser.getByteFrequencyData(data);
+  // var speechData = data.subarray(this.fstartIndex, this.fstopIndex);
+  var n = this.fstopIndex - this.fstartIndex;
+  // console.log(data.subarray(this.fstartIndex, this.fstopIndex));
+  var s = 0;
+  var s2 = 0;
+  var maxV = 0;
+  var maxI = 0;
+  // Calculate variance for speech detection 
+  for (var i = this.fstartIndex; i < this.fstopIndex; i++) {
+    s += data[i];
+    s2 += data[i] * data[i];
+    // get index of loudest frequency
+    if (data[i] > maxV) {
+      maxV = data[i];
+      maxI = i;
+    };
+  };
+  var variance = (s2 - (s*s) / n) / n;
+  // console.log(variance);
+
+  // Return the frequency point that has the highest amplitude in the array
+  if (variance > this.varThreshold ) {
+    var loudestFreq = ( maxI - 1 ) * this.sampleRate / data.length;
+    var outNormalised = (loudestFreq-this.fmin)/(this.fmax-this.fmin);
+    return outNormalised;
+  }
+  else {
+    return 0;
+  };
+}
+
 
  // Functions for AvisModel that enables it to work as a subject
 // in the observerpattern:
@@ -135,9 +181,8 @@ ToneModel.prototype.removeObserver = function( observer ){
 
 ToneModel.prototype.notify = function() {
   var observerCount = this.observers.Count();
-  this.nlbs();
   // place the current frequencydata in the array data
   for(var i=0; i < observerCount; i++){
-    this.observers.Get(i).update( this.amplitudes );
+    this.observers.Get(i).update( this.getTone() );
   }
 };

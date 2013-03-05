@@ -11,15 +11,21 @@
     <script type="text/javascript" src="js/observerList.js"></script>
     <script type="text/javascript" src="js/toneModel.js"></script>
     <script type="text/javascript" src="js/toneLine.js"></script>
+    <script type="text/javascript" src="js/webgl-utils.js"></script>
 	<link type="text/css" rel="stylesheet" href="toney.css">
 </head>
 <script>
 	$(function() {
 		var model, line;
-		
-		model = new ToneModel(2048, 100);
+		model = new ToneModel(2048, 16);
 		line = new ToneLine('#toney');
 		model.addObserver(line);
+
+		function tick() {
+			requestAnimFrame(tick);
+			line.draw();
+		}
+		tick();
 	});
 </script>
 <body>

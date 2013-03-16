@@ -1,25 +1,43 @@
 /*
 Written by Tor Nilsson Öhrn in February of 2013
-Heavily inspired by http://phenomnomnominal.github.com/docs/tuner.html
+Heavily inspired by http://phenomnomnominal.github.com/docs/tuner.html and
+http://webaudiodemos.appspot.com/input/index.html
 */
 
-ToneModel = function(r, n) {
-  this.updateRate = 16;
-  this.smoothing = 0.95;
-  this.bands = n;
+hzToBark = function (Hz) {
+  // Traunmüller's conversion
+  var bark = 26.81 / ( 1+1960/Hz ) - 0.53;
+  return bark;
+};
+
+var audioContext = null,
+    analyser = null,
+    audioInput = null;
+
+var hertz = { index: 0, name: 'Hz', min: 400.0, max: 3000.0 };
+var bark = { index: 1, name: 'bark', min: hzToBark(hertz.min), max: hzToBark(hertz.max) };
+
+var units = {bark: bark, hertz: hertz};
+
+
+ToneModel = function(r) {
+  this.updateRate = 50;
+  this.smoothing = 0.85;
+  this.resolution = r;
 
   //  Parameters for clipping of uninteresting audio data
-  this.varThreshold = 500; 
-  this.fmin = 300;
-  this.fmax = 4000; 
-
-  this.amplitudes = new Array();
+  this.varThreshold = 700;
+  this.outputUnit = units['bark'];
+  this.fmin = hertz.min;
+  this.fmax = hertz.max;
+  this.amplitudes = [];
   this.observers = new ObserverList();
   this.init(r);
-}
+  console.log(this.outputUnit);
+};
 
 ToneModel.prototype.init = function(r) {
-  
+
   /* cross-browser retrieval of neccessary Web Audio API context providers and the ability to get users microphone input
   */
   var vendors = ['', 'ms', 'moz', 'webkit', 'o'];
@@ -28,11 +46,11 @@ ToneModel.prototype.init = function(r) {
       navigator.getUserMedia = navigator[vendors[x]+'GetUserMedia'];
   }
   if (!window.AudioContext || !navigator.getUserMedia) {
-    alert('UNFORTUNATELY THIS APPlICATION REQUIRES THE LATEST BUILD OF CHROME CANARY WITH "Web Audio Input" ENABLED IN chrome://flags.');
-  };
+    alert('UNFORTUNATELY THIS APPlICATION REQUIRES THE LATEST BUILD OF CHROME WITH "Web Audio Input" ENABLED IN chrome://flags.');
+  }
 
   audioContext = new AudioContext();
-  
+
   this.sampleRate = audioContext.sampleRate;
   analyser = audioContext.createAnalyser();
 
@@ -41,28 +59,24 @@ ToneModel.prototype.init = function(r) {
 
   this.data = new Uint8Array(analyser.frequencyBinCount);
 
-  /* Highest voice frequency is roughly 3000Hz so we need Fs to be 6000Hz 
-  According to the Nyquist-Shannon sampling theorem
-  Microphones sample rate is 44100Hz so we can divide that by 7 without problems
-  Set fftSize/bufferlength to a value 2^n
-  */
-
-  // Find the indexes of the min and max frequencies in the dataarray 
-  this.fstartIndex = Math.round(this.data.length*this.fmin/this.sampleRate+1);
-  this.fstopIndex = Math.round(this.data.length*this.fmax/this.sampleRate+1);
-
+  // connect microphone
   navigator.getUserMedia( {audio:true}, this.gotStream.bind(this), function(err) {console.log(err)} );
+  
+  this.peaks = [];
+  
+  
   console.log(this);
-}
+};
+
 
 ToneModel.prototype.enable = function() {
   var that = this;
   if (!this.intervalId) {
     this.intervalId = window.setInterval(
-        function() { that.notify(); }, this.updateRate);
+        function() { that.update(); }, this.updateRate);
   }
   return this;
-}
+};
 
 ToneModel.prototype.disable = function() {
   if (this.intervalId) {
@@ -70,119 +84,134 @@ ToneModel.prototype.disable = function() {
     this.intervalId = undefined;
   }
   return this;
-}
+};
+
+// TODO - get input from soundfile:
+
+  // // for playing soundfile
+  // audio = new Audio();
+  // audio.src = 'audio/ma_short.wav';
+  // audio.controls = true;
+  // audio.autoplay = false;
+  // $('#player').append(audio);
+  
+  // source = audioContext.createMediaElementSource(audio);
+ // Connect nodes for routing
+  // source.connect(analyser);
+  // source.connect(audioContext.destination);
+
 
 ToneModel.prototype.gotStream = function(stream) {
   // Create an AudioNode from the stream.
-  var mediaStreamSource = audioContext.createMediaStreamSource( stream );
-  // Connect it to the destination to hear yourself (or any other node for processing!)
-  mediaStreamSource.connect( analyser );
-  console.log("gotStream!");
+  var audioInput = audioContext.createMediaStreamSource( stream );
+
+ 
+  // Create the filters
+  // var gain = audioContext.createGainNode(); // not used ATM
+  var lpF = audioContext.createBiquadFilter();
+  var hpF = audioContext.createBiquadFilter();
+
+  // Create the audio graph.
+  audioInput.connect(lpF);
+  lpF.connect(hpF);
+  hpF.connect( analyser );
+
+  lpF.type = lpF.LOWPASS; // Low-pass filter. 
+  hpF.type = hpF.HIGHPASS; // High-pass filter. 
+
+  lpF.frequency.value = this.fmax; // Set cutoff 
+  hpF.frequency.value = this.fmin; // Set cutoff 
+
+  console.log("microphone audio graph set up!");
+  console.log(analyser);
+
   this.enable();
   this.notify();
-}
+};
 
 ToneModel.prototype.update = function() {
   var data = this.data;
-  var length = data.length;
-  analyser.getByteFrequencyData(data);
-  // Break the samples up into bins
-  var binSize = Math.floor( length / this.bands );
-  for (var i=0; i < this.bands; ++i) {
-    var sum = 0
-    for (var j=0; j < binSize; ++j) {
-      sum += data[(i * binSize) + j];
-    }
-    // add the average amplitude to the output array
-    this.amplitudes[i] = sum / binSize;
-  }
-}
-
-// updatemethod with different binsizes
-ToneModel.prototype.nlbs = function() {
-  var data = this.data;
-  var length = data.length;
-  analyser.getByteFrequencyData(data);
-
-  var curr = 0;
-  var prev;
-  var min = Number.MAX_VALUE;
-  var max = 0;
-  for (var i = 0; i < this.bands; i++) {
-    var sum = 0;
-    var binSize =  Math.floor(20*(i/this.bands));
-    // var binSize = Math.floor( length / this.bands );
-    var prev = curr;
-    while (curr < prev+binSize && curr < length) {
-      sum += data[curr];
-      curr++;
-    }
-    var avg = sum / 20*(this.bands/i);
-    // console.log(binSize);
-    // add the average amplitude to the output array
-    this.amplitudes[i] = avg;
-    if (avg < min) {
-      min = avg; }
-    if (avg > max) {
-      max = avg; }
-  };
-  // Normalise values
-  for (var i = this.amplitudes.length - 1; i >= 0; i--) {
-    this.amplitudes[i] = (this.amplitudes[i]-min)/(max-min);
-  };
-}
-
-ToneModel.prototype.getTone = function() {
-  var data = this.data;
   analyser.getByteFrequencyData(data);
   // var speechData = data.subarray(this.fstartIndex, this.fstopIndex);
-  var n = this.fstopIndex - this.fstartIndex;
-  // console.log(data.subarray(this.fstartIndex, this.fstopIndex));
-  var s = 0;
-  var s2 = 0;
-  var maxV = 0;
-  var maxI = 0;
+  var n = data.length;
+  var s = 0; // normal sum
+  var s2 = 0; // quadratic sum
+  var maxP = 0;
+  var i;
+  // console.log(data);
+
+  // reuse old array in order to avoid unnecessary instantiation
+  var peaks = this.peaks.slice(0);
   // Calculate variance for speech detection 
-  for (var i = this.fstartIndex; i < this.fstopIndex; i++) {
+  for (i = 0; i < n; i++) {
     s += data[i];
     s2 += data[i] * data[i];
-    // get index of loudest frequency
-    if (data[i] > maxV) {
-      maxV = data[i];
-      maxI = i;
-    };
-  };
+    // store index of potential peaks in an array
+    if ((data[i] > data[i-1]) && (data[i] > data[i+1])) {
+      peaks.unshift(i);
+      if (data[i] > maxP) {
+        maxP = data[i];
+      }
+    }
+  }
   var variance = (s2 - (s*s) / n) / n;
-  // console.log(variance);
-
+  // Remove peaks that are too small
+  for (i = peaks.length - 1; i >= 0; i--) {
+    if (data[peaks[i]] < 0.2 * maxP) {
+      peaks.splice(i,1);
+    }
+  }
+  peaks.sort();
+  var numPeaksLimit = 4;
   // Return the frequency point that has the highest amplitude in the array
-  if (variance > this.varThreshold ) {
-    var loudestFreq = ( maxI - 1 ) * this.sampleRate / data.length;
-    var outNormalised = (loudestFreq-this.fmin)/(this.fmax-this.fmin);
-    return outNormalised;
+  if (( variance > this.varThreshold ) && ( peaks.length >  numPeaksLimit) ) {
+    s = 0;
+    var sLength = 0;
+    // calculate the average frequency of the first four peaks
+    for (i = 0; i < numPeaksLimit; i++) {
+      // get frequency of certain dataindex
+      if (peaks[i]) {
+         s += ( peaks[i] ) / ( data.length-1 ) * (this.fmax - this.fmin) + this.fmin;
+         sLength++;
+      }
+    }
+    var avgFreq = s/sLength;
+
+    switch (this.outputUnit.index) {
+      case 0: // Hz
+        this.tone = avgFreq;
+        break;
+      case 1: // Bark
+        var avgBark = hzToBark( avgFreq );
+        this.tone = avgBark;
+        console.log(this.tone);
+        break;
+    }
   }
   else {
-    return 0;
-  };
-}
+    this.tone = 0;
+  }
+  // console.log(this.tone);
+  this.notify();
+};
 
 
- // Functions for AvisModel that enables it to work as a subject
+// Functions for AvisModel that enables it to work as a subject
 // in the observerpattern:
 //--------------------------------------------------------------
 ToneModel.prototype.addObserver = function( observer ){
   this.observers.Add( observer );
   console.log("added observer");
-};  
+};
 
 ToneModel.prototype.removeObserver = function( observer ){
   this.observers.RemoveAt( this.observers.IndexOf( observer, 0 ) );
-};  
+};
 
 ToneModel.prototype.notify = function() {
   var observerCount = this.observers.Count();
   // place the current frequencydata in the array data
   for(var i=0; i < observerCount; i++){
-    this.observers.Get(i).update( this.getTone() );
+    this.observers.Get(i).update( this.tone );
   }
 };

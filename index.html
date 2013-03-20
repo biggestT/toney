@@ -3,24 +3,41 @@
 <html>
 <head>
 	<meta charset="utf-8"/>
-	<meta name="description" content="Chinese Tone Helper">
+	<meta name="description" content="Gives you realtime visual feedback on your pitch when speaking Chinese">
 	<meta name="keywords" content="Chinese,tones,Web audio,JavaScript">
 	<meta name="author" content="Tor Nilsson Öhrn">
     <title>Toney</title>
-    <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-    <script type="text/javascript" src="js/observerList.js"></script>
-    <script type="text/javascript" src="js/toneModel.js"></script>
-    <script type="text/javascript" src="js/toneLine.js"></script>
-    <script type="text/javascript" src="js/webgl-utils.js"></script>
 	<link type="text/css" rel="stylesheet" href="toney.css">
 </head>
-<script>
+
+<body>
+	<canvas id="toneLine" width="800px" height="400px"></canvas>
+	<div id="player"></div>
+	<div id="message3"></div>
+	 <!-- Third party js libraries -->
+  <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+  <script type="text/javascript" src="js/observerList.js"></script>
+  <script type="text/javascript" src="js/webgl-utils.js"></script>
+  <script type="text/javascript" src="js/underscore.js"></script>
+  <script type="text/javascript" src="js/backbone.js"></script>
+  <!-- Toney js files -->
+  <script type="text/javascript" src="js/toneModel.js"></script>
+  <script type="text/javascript" src="js/toneView.js"></script>
+  <script>
 	$(function() {
 		var model, line;
-		model = new ToneModel(1024);
-		line = new ToneLine('#toney');
-		line.setScale(model.outputUnit.min, model.outputUnit.max);
-		model.addObserver(line);
+		
+		toneyModel = new ToneModel();
+
+		toneLineContext = $("#toneLine")[0].getContext('2d');
+
+		console.log(toneLineContext);
+		
+		line = new ToneLineView({
+			model: toneyModel,
+			ctx: toneLineContext
+		});
+		// line.setScale(model.get('outputUnit').min, model.get('outputUnit').max);
 
 		function tick() {
 			requestAnimFrame(tick);
@@ -29,10 +46,5 @@
 		tick();
 	});
 </script>
-<body>
-	<div id="toneLine"></div>
-	<canvas id="toney" width="800px" height="400px"></canvas>
-	<div id="player"></div>
-	<div id="message3"></div>
 </body>
 </html>

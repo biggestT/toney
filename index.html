@@ -11,39 +11,56 @@
 </head>
 
 <body>
-	<canvas id="toneLine" width="800px" height="400px"></canvas>
-	<div id="player"></div>
-	<div id="message3"></div>
+	<canvas id="toneLine" width="800px" height="200px"></canvas>
+	<div id="player">
+	  <button id="playSound">Play the Audio</button>
+	  <button id="pauseSound">Pause the Audio</button>
+	</div>
+	<div id="message"></div>
 	 <!-- Third party js libraries -->
   <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-  <script type="text/javascript" src="js/observerList.js"></script>
   <script type="text/javascript" src="js/webgl-utils.js"></script>
   <script type="text/javascript" src="js/underscore.js"></script>
   <script type="text/javascript" src="js/backbone.js"></script>
   <!-- Toney js files -->
+  <script type="text/javascript" src="js/inputStates.js"></script>
   <script type="text/javascript" src="js/toneModel.js"></script>
   <script type="text/javascript" src="js/toneView.js"></script>
   <script>
 	$(function() {
 		var model, line;
 		
+		
+
 		toneyModel = new ToneModel();
+
+		// example on how to set new audio source
+		// toneyModel.set({
+		// 	soundfileSource: "audio/ma_short.wav"
+		// });
 
 		toneLineContext = $("#toneLine")[0].getContext('2d');
 
-		console.log(toneLineContext);
-		
+		$('#player').append(toneyModel.get('audio'));
+		$('#playSound').click( function() {
+			toneyModel.playSound();
+		});
+		$('#pauseSound').click(function() {
+			toneyModel.pauseSound();
+		});
+
 		line = new ToneLineView({
 			model: toneyModel,
 			ctx: toneLineContext
 		});
-		// line.setScale(model.get('outputUnit').min, model.get('outputUnit').max);
 
 		function tick() {
 			requestAnimFrame(tick);
 			line.draw();
 		}
 		tick();
+
+
 	});
 </script>
 </body>

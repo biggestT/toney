@@ -22,7 +22,7 @@ var units = {bark: barkUnit, hertz: hertzUnit};
 
 app.ToneModel = Backbone.Model.extend({
   defaults: {
-    updateRate: 30,
+    updateRate: 40,
     smoothing: 0.0,
     resolution: 512,
     //  Parameters for clipping of uninteresting audio data

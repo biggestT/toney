@@ -7,61 +7,45 @@
 	<meta name="keywords" content="Chinese,tones,Web audio,JavaScript">
 	<meta name="author" content="Tor Nilsson Öhrn">
     <title>Toney</title>
-	<link type="text/css" rel="stylesheet" href="toney.css">
+  <link type="text/css" href="css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
+  <link type="text/css"href="css/toney.css"  rel="stylesheet" >
 </head>
 
 <body>
-	<canvas id="toneLine" width="800px" height="200px"></canvas>
-	<div id="player">
-	  <button id="playSound">Play the Audio</button>
-	  <button id="pauseSound">Pause the Audio</button>
-	</div>
-	<div id="message"></div>
-	 <!-- Third party js libraries -->
-  <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
-  <script type="text/javascript" src="js/webgl-utils.js"></script>
-  <script type="text/javascript" src="js/underscore.js"></script>
-  <script type="text/javascript" src="js/backbone.js"></script>
+	<section id="toneyApp">
+		<header id="header">
+			<div id="logo">
+				<img id="logoImage" src="images/logo.png"></img>
+				<h1 id="logoText">Toney</h1>
+			</div>
+		</header>
+		<section id="main">
+			<canvas id="toneWindow" width="800px" height="200px"></canvas>
+			<!-- content to be created by scripts -->
+		</section>
+		<button id="playPause" >Play</button>
+		<footer id="footer"></footer>
+	</section>
+	<image id="processingImage" src="images/processing.gif"></image>
+	<!-- LOAD SCRIPTS -->
+
+	<!-- Third party js libraries -->
+  <script type="text/javascript" src="js/lib/jquery-1.8.3.min.js"></script>
+  <script type="text/javascript" src="js/lib/jquery-ui-1.9.2.custom.min.js"></script>
+  <script type="text/javascript" src="js/lib/webgl-utils.js"></script>
+  <script type="text/javascript" src="js/lib/underscore.js"></script>
+  <script type="text/javascript" src="js/lib/backbone.js"></script>
   <!-- Toney js files -->
   <script type="text/javascript" src="js/inputStates.js"></script>
   <script type="text/javascript" src="js/toneModel.js"></script>
   <script type="text/javascript" src="js/toneView.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+
   <script>
+  // Kick off everyting!
 	$(function() {
-		var model, line;
-		
-		
-
-		toneyModel = new ToneModel();
-
-		// example on how to set new audio source
-		// toneyModel.set({
-		// 	soundfileSource: "audio/ma_short.wav"
-		// });
-
-		toneLineContext = $("#toneLine")[0].getContext('2d');
-
-		$('#player').append(toneyModel.get('audio'));
-		$('#playSound').click( function() {
-			toneyModel.playSound();
-		});
-		$('#pauseSound').click(function() {
-			toneyModel.pauseSound();
-		});
-
-		line = new ToneLineView({
-			model: toneyModel,
-			ctx: toneLineContext
-		});
-
-		function tick() {
-			requestAnimFrame(tick);
-			line.draw();
-		}
-		tick();
-
-
+		new app.AppView();
 	});
-</script>
+	</script>
 </body>
 </html>

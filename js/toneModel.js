@@ -22,9 +22,9 @@ var units = {bark: barkUnit, hertz: hertzUnit};
 
 app.ToneModel = Backbone.Model.extend({
   defaults: {
-    updateRate: 40,
-    smoothing: 0.0,
-    resolution: 512,
+    updateRate: 30,
+    smoothing: 0.5,
+    resolution: 1024,
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
     outputUnit: units['bark'],
@@ -94,17 +94,10 @@ app.ToneModel = Backbone.Model.extend({
 
     // redo soundfile set up if the soundfile source changes 
     this.on('change:soundfileSource', this.setupNewSoundfile());
-    // notify viewers about change of input source
-    this.on('change:playing', function() { 
-      console.log('changed play/pause');
-      this.playToggle();
-      this.trigger('playToggled'); 
-    }); 
-    this.on('change:processing', function() { 
-      console.log('changed processing');
-      this.playToggle();
-      this.trigger('processingToggled'); 
-    }); 
+   
+    console.log(this.get('audio'));
+    // Toggle play pause when soundfile is finished playing
+    $(this.get('audio')).bind('ended', this.playToggle.bind(this));
   },
   initializeMicrophone: function (stream) {
     this.set({microphoneInput: audioContext.createMediaStreamSource( stream ) });
@@ -139,26 +132,24 @@ app.ToneModel = Backbone.Model.extend({
       if (inputState) {
         inputState.exit();
       }
+      this.trigger('stateChanged');
       this.set({ inputState: state });
       this.get('inputState').execute();
+      console.log('state changed');
     }
   },
   playToggle: function() {
-    if (this.get('playing')) {
-      this.changeState(this.get('inputStates')['soundfile']);
+    var wasPlaying = this.get('playing');
+    this.set({ playing: !wasPlaying });
+    if ( wasPlaying ) {
+      this.changeState(this.get('inputStates')['microphone']);
       console.log('changed state to microphone');
     }
     else {
-      this.changeState(this.get('inputStates')['microphone']);
+      this.changeState(this.get('inputStates')['soundfile']);
       console.log('changed state to soundfile');
     }
-  },
-  pauseSound: function() {
-    this.get('audio').pause();
-    if (this.get('microphoneInput')) {
-      this.changeState(this.get('inputStates')['microphone']);
-      console.log("pausing sound function");
-    }
+    console.log(this.get('playing'));    
   },
   setupAudioGraph: function() {
     // Create the filters for speech clipping
@@ -246,7 +237,6 @@ app.ToneModel = Backbone.Model.extend({
     else {
       this.set({tone: 0});
     }
-    // console.log(this.get('tone'));
     this.trigger('toneChange', this.get('tone'));
   }
 });

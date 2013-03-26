@@ -10,9 +10,7 @@ app.AppView = Backbone.View.extend({
 		'click #playPause': 'togglePlayPause'
 	},
 
-
 	// UNDER CONSTRUCTION! 
-
 	initialize: function() {
 
 		this.playPauseButton = this.$('#playPause');
@@ -41,13 +39,13 @@ app.AppView = Backbone.View.extend({
 		}
 		tick();
 		
-		this.listenTo( app.toneModel, 'playToggled', this.render );
-		this.listenTo( app.toneModel, 'processingToggled', this.render );
+		this.listenTo( app.toneModel, 'stateChanged', this.render );
 		
 		this.render();
 	},
-	// Re-rendering the App currently just switches between play/pause
+	// Re-rendering the App when the model's state changes
 	render: function () {
+		console.log(app.toneModel.get('playing'));
 		if (app.toneModel.get('processing')) {
 			$(this.el).hide();
 			$('#processingImage').show();
@@ -68,7 +66,7 @@ app.AppView = Backbone.View.extend({
 	},
 	// swap between playing and paused sound in model
 	togglePlayPause: function() {
-		app.toneModel.set({ playing: !app.toneModel.get('playing') });
+		app.toneModel.playToggle();
 		console.log('toggled play pause');
 	}
 });

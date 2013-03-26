@@ -7,11 +7,11 @@
   microphoneState = BaseState.extend({
     execute: function() {
       this._owner.get('microphoneInput').connect(this._owner.get('analysisInputNode'));
-      console.log(this._owner.get('microphoneInput'));
       console.log('listening to microphoneInput');
       // this._owner.set({ playing: false });
       this._owner.enableSoundAnalysis();
       this._owner.get('audio').pause();
+      
     },
     start: function() {
     },
@@ -24,13 +24,12 @@
   soundfileState = BaseState.extend({
     execute: function() {
       console.log('listening to soundfile');
-      console.log(this._owner.get('soundFileInput'));
       this._owner.get('soundFileInput').connect(this._owner.get('analysisInputNode'));
       this._owner.get('soundFileInput').connect(audioContext.destination);
-      console.log(this._owner.get('analysisInputNode'));
       // this._owner.set({ playing: true });
       this._owner.enableSoundAnalysis();
       this._owner.get('audio').play();
+
     },
     start: function() {
     },

@@ -18,7 +18,7 @@ var BaseState = Backbone.Model.extend({
 				this.prevTone = this.tone;
 				this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
 				this.count++;
-				console.log(this.tone);
+				// console.log(this.tone);
 		}
   }
 });
@@ -69,13 +69,13 @@ app.ToneLineView = ToneView.extend({
 		this.sourceStates.microphone = new microphoneSource(this);
 		this.sourceStates.soundfile = new soundfileSource(this);
 
-		this.sourceState = this.sourceStates.microphone;
+		this.sourceState = this.sourceStates.soundfile;
 
 		this.setAxis()
 		this.ctx = this.options.ctx;
 
 		this.listenTo(this.model, "toneChange", this.update);
-		this.listenTo(this.model, "playToggled", this.nextState);
+		this.listenTo(this.model, "stateChanged", this.nextState);
 		this.listenTo(this.model, "unitChange", this.setAxis);
 		this.sourceState.update();
 	},

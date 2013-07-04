@@ -1,3 +1,23 @@
+/* modifications by Tor */
+@import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
+
+body {
+  /*padding:50px;*/
+  font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color:#777;
+  font-weight:300;
+}
+
+.logo {
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+small {
+  margin-top: 10px;
+  display: block;
+}
+/* Twitter-bootstrap modifications by jekyll-bootstrap */
+
 /* Custom container */
 .container-narrow {
   margin: 0 auto;

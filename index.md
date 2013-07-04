@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Toney Development Blog
+title:  欢迎 - Huānyíng - Welcome
 tagline: Follow the development of a new game for practicing Chinese tones
 ---
 {% include JB/setup %}

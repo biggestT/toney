@@ -18,7 +18,6 @@ var BaseState = Backbone.Model.extend({
 				this.prevTone = this.tone;
 				this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
 				this.count++;
-				// console.log(this.tone);
 		}
   }
 });
@@ -46,9 +45,7 @@ var ToneView = Backbone.View.extend({
 	
 	tagName: 'canvas',
 	test: 1,
-	min: 400,
-	max: 4000,
-	n: 100,
+	n: 80,
 	lineWidth: 3,
 	count: 0,
 	colors: {

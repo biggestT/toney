@@ -24,10 +24,10 @@ app.ToneModel = Backbone.Model.extend({
   defaults: {
     updateRate: 30,
     smoothing: 0.5,
-    resolution: 1024,
+    resolution: 2048,
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
-    outputUnit: units['bark'],
+    outputUnit: units['Hz'],
     fmin: hertzUnit.min,
     fmax: hertzUnit.max,
     soundfileSource: 'audio/ma_short.wav',
@@ -178,7 +178,9 @@ app.ToneModel = Backbone.Model.extend({
      console.log('changed outputUnit to: ' + unitName);
     }
   },
-  update: function() {
+
+  // Implementation of Gustavs average peak distance algorithm
+  updateAVG: function() {
     var data = this._data;
     analyser.getByteFrequencyData(data);
     var n = data.length;
@@ -238,7 +240,81 @@ app.ToneModel = Backbone.Model.extend({
       this.set({tone: 0});
     }
     this.trigger('toneChange', this.get('tone'));
+  },
+  // Implementation of the HPS algorithm
+  update: function () {
+    var iterations = 7; // downsampling factor
+    var data = this._data; 
+    analyser.getByteFrequencyData(data);
+
+    // console.log(n);
+    var n = data.length;
+    var m = Math.floor(n/iterations);
+    var spectrum = new Array(m);
+
+    // Psychoacoustic compensation to increase the importance of higher frequencies?
+    // 10 is an arbitrary constant
+    // I would assume the opposite relationship :S
+    for (var j = 0; j < m; j++) {
+      spectrum[j] = 1 + j/10;
+      // spectrum[j] = 1 ;
+    }
+    // Create the harmonic product spectrum with 50 being an arbitrary constant
+    for (var i = 1; i < iterations; i++) {
+      for (var j = 0; j < m; j++) {
+        spectrum[j] *= data[j*i] / 100;
+      }
+    }
+
+    m = spectrum.length;
+    // Find the index of the frequency with the highest amplitude in the HPS 
+    var max = 0;
+    var avg = 0;
+    for (var j = 0; j < m; j++) {
+        var v = spectrum[j];
+        avg += v;
+        if (spectrum[j] > spectrum[max]) {
+            max = j;
+        }
+    }
+    avg /= m;
+
+    var s = 0; // sum for calculating variance
+    var s2 = 0; // sum squared for calculation variance 
+    for (i = 0; i < n; i++) {
+      s += data[i];
+      s2 += data[i] * data[i];
+    }
+    var variance = (s2 - (s*s) / n) / n;
+
+    // Get the fundamental frequency in hertz
+    if ( variance > this.get('varThreshold') ) {
+      var tone = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
+      // Set the new tone
+      this.set({tone: max/2});
+    } else {
+      this.set({tone: 0});
+    }
+
+
+    // SONG PONG Specific part not used
+    // if (spectrum[max] - avg > 50 && spectrum[max] > 100) {
+    //   if (max > 10) {
+    //     // this.set({tone: oldTone++});
+    //   } else {
+    //     // this.set({tone: oldTone--});
+    //   }
+    // } else {
+    //     // this.set({tone: oldTone});
+    // }
+
+    this.trigger('toneChange', this.get('tone'));
   }
+    
+  
+  
+
+  
 });
 
 

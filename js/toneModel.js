@@ -23,7 +23,7 @@ var units = {bark: barkUnit, hertz: hertzUnit};
 app.ToneModel = Backbone.Model.extend({
   defaults: {
     updateRate: 30,
-    smoothing: 0.5,
+    smoothing: 0.0,
     resolution: 2048,
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
@@ -109,19 +109,24 @@ app.ToneModel = Backbone.Model.extend({
     this.get('audio').src = this.get('soundfileSource');
   },
   enableSoundAnalysis: function() {
-    var that = this;
-    if (!this._intervalId) {
-      this._intervalId = window.setInterval(
-          function() { that.update(); }, this.get('updateRate'));
-    }
+    // var that = this;
+    // if (!this._intervalId) {
+    //   this._intervalId = window.setInterval(
+    //       function() { that.update(); }, this.get('updateRate'));
+    // }
+    // return this;
+    this.update();
+    console.log("requested animationframe");
     return this;
   },
   disableSoundAnalysis: function() {
-    if (this._intervalId) {
-      window.clearInterval(this._intervalId);
-      this._intervalId = undefined;
-    }
-    return this;
+    // if (this._intervalId) {
+    //   window.clearInterval(this._intervalId);
+    //   this._intervalId = undefined;
+    // }
+    // return this;
+    cancelAnimationFrame(this.update.bind(this));
+    console.log("cancelled animationframe");
   },
   changeState: function(state) {
     var inputState = this.get('inputState');
@@ -243,6 +248,9 @@ app.ToneModel = Backbone.Model.extend({
   },
   // Implementation of the HPS algorithm
   update: function () {
+    requestAnimationFrame(this.update.bind(this));
+
+
     var iterations = 7; // downsampling factor
     var data = this._data; 
     analyser.getByteFrequencyData(data);
@@ -262,7 +270,7 @@ app.ToneModel = Backbone.Model.extend({
     // Create the harmonic product spectrum with 50 being an arbitrary constant
     for (var i = 1; i < iterations; i++) {
       for (var j = 0; j < m; j++) {
-        spectrum[j] *= data[j*i] / 100;
+        spectrum[j] *= data[j*i] / 50;
       }
     }
 
@@ -290,11 +298,20 @@ app.ToneModel = Backbone.Model.extend({
     // Get the fundamental frequency in hertz
     if ( variance > this.get('varThreshold') ) {
       var tone = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
-      // Set the new tone
-      this.set({tone: max/2});
+      switch (this.get('outputUnit').index) {
+        case 0: // Hz
+          this.set({tone: tone});
+          break;
+        case 1: // Bark
+          var toneInBark = hzToBark( tone );
+          this.set({tone: toneInBark});
+          break;
+      }
     } else {
       this.set({tone: 0});
     }
+
+    console.log("updated");
 
 
     // SONG PONG Specific part not used

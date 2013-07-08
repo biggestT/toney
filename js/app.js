@@ -33,11 +33,11 @@ app.AppView = Backbone.View.extend({
 		});
 
 		// start drawing everyting that needs to be drawn in approx 60 fps
-		function tick() {
-			requestAnimFrame(tick);
-			line.draw();
-		}
-		tick();
+		// function tick() {
+			// requestAnimationFrame(app.toneModel.update);
+		// 	line.draw();
+		// }
+		// tick();
 		
 		this.listenTo( app.toneModel, 'stateChanged', this.render );
 		

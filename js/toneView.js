@@ -14,10 +14,11 @@ var BaseState = Backbone.Model.extend({
   },
   update: function (t) {
 	  if (t > 0) {
-				// Normalise input value
+				// Normalise input value (in frequency unit) to fit canvas coordinates
 				this.prevTone = this.tone;
 				this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
 				this.count++;
+				this.owner.draw();
 		}
   }
 });
@@ -44,9 +45,8 @@ var soundfileSource = BaseState.extend({
 var ToneView = Backbone.View.extend({
 	
 	tagName: 'canvas',
-	test: 1,
-	n: 80,
-	lineWidth: 3,
+	n: 300,
+	lineWidth: 4,
 	count: 0,
 	colors: {
 		red: '#B0171F',

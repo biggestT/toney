@@ -16,7 +16,12 @@ var BaseState = Backbone.Model.extend({
 	  if (t > 0) {
 				// Normalise input value (in frequency unit) to fit canvas coordinates
 				this.prevTone = this.tone;
-				this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
+				// this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
+				// @TODO fix smaller dynamic range 
+				// than considered in analysis
+				var currTone = ( t - 1 ) / (8 - 1 ); 
+				// Smoothing
+				this.tone = currTone * (1-this.owner.smoothing) + this.prevTone * this.owner.smoothing;
 				this.count++;
 				this.owner.draw();
 		}
@@ -45,9 +50,10 @@ var soundfileSource = BaseState.extend({
 var ToneView = Backbone.View.extend({
 	
 	tagName: 'canvas',
-	n: 300,
+	n: 200,
 	lineWidth: 4,
 	count: 0,
+	smoothing: 0.8,
 	colors: {
 		red: '#B0171F',
 		green: '#008B00',

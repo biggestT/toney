@@ -47,7 +47,7 @@ app.ToneModel = Backbone.Model.extend({
         navigator.getUserMedia = navigator[vendors[x]+'GetUserMedia'];
     }
     if (!window.AudioContext || !navigator.getUserMedia) {
-      alert('UNFORTUNATELY THIS APPlICATION REQUIRES THE LATEST BUILD OF CHROME WITH "Web Audio Input" ENABLED IN chrome://flags.');
+      alert('THIS APPlICATION REQUIRES "Web Audio Input" ENABLED IN chrome://flags.');
     }
 
     audioContext = new AudioContext();
@@ -108,25 +108,18 @@ app.ToneModel = Backbone.Model.extend({
     console.log("audiofilesource changed");
     this.get('audio').src = this.get('soundfileSource');
   },
-  enableSoundAnalysis: function() {
-    // var that = this;
-    // if (!this._intervalId) {
-    //   this._intervalId = window.setInterval(
-    //       function() { that.update(); }, this.get('updateRate'));
-    // }
-    // return this;
-    this.update();
-    console.log("requested animationframe");
-    return this;
+  startSoundAnalysis: function() {
+    this.animationID = window.requestAnimationFrame(this.update.bind(this));
+    // this.update();
+    console.log("started sound analysis")
+    // this.update();
   },
-  disableSoundAnalysis: function() {
-    // if (this._intervalId) {
-    //   window.clearInterval(this._intervalId);
-    //   this._intervalId = undefined;
-    // }
-    // return this;
-    cancelAnimationFrame(this.update.bind(this));
-    console.log("cancelled animationframe");
+  stopSoundAnalysis: function() {
+    if ( this.animationID ) {
+      window.cancelAnimationFrame(this.animationID);
+      console.log("cancelled animationframe");
+    }
+    this.animationID = 0;
   },
   changeState: function(state) {
     var inputState = this.get('inputState');
@@ -148,11 +141,9 @@ app.ToneModel = Backbone.Model.extend({
     this.set({ playing: !wasPlaying });
     if ( wasPlaying ) {
       this.changeState(this.get('inputStates')['microphone']);
-      console.log('changed state to microphone');
     }
     else {
       this.changeState(this.get('inputStates')['soundfile']);
-      console.log('changed state to soundfile');
     }
     console.log(this.get('playing'));    
   },
@@ -183,88 +174,22 @@ app.ToneModel = Backbone.Model.extend({
      console.log('changed outputUnit to: ' + unitName);
     }
   },
-
-  // Implementation of Gustavs average peak distance algorithm
-  updateAVG: function() {
-    var data = this._data;
-    analyser.getByteFrequencyData(data);
-    var n = data.length;
-    var s = 0; // normal sum
-    var s2 = 0; // quadratic sum
-    var maxP = 0; // amplitude of highest peak
-    var i;
-
-    // reuse old array in order to avoid unnecessary instantiation
-    var peaks = this._peaks.slice(0);
-    // Calculate variance for speech detection 
-    for (i = 0; i < n; i++) {
-      s += data[i];
-      s2 += data[i] * data[i];
-      // store index of potential peaks in an array
-      if ((data[i] > data[i-1]) && (data[i] > data[i+1])) {
-        peaks.unshift(i);
-        if (data[i] > maxP) {
-          maxP = data[i];
-        }
-      }
-    }
-    var variance = (s2 - (s*s) / n) / n;
-    // Remove peaks that are too small
-    for (i = peaks.length - 1; i >= 0; i--) {
-      if (data[peaks[i]] < 0.2 * maxP) {
-        peaks.splice(i,1);
-      }
-    }
-    peaks.sort();
-    var numPeaksLimit = 4;
-    // Return the frequency point that has the highest amplitude in the array
-    if (( variance > this.get('varThreshold') ) && ( peaks.length >  numPeaksLimit) ) {
-      s = 0;
-      var sLength = 0;
-      // calculate the average frequency of the first peaks
-      for (i = 0; i < numPeaksLimit; i++) {
-        // get frequency of certain dataindex
-        if (peaks[i]) {
-           s += ( peaks[i] ) / ( data.length-1 ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
-           sLength++;
-        }
-      }
-      var avgFreq = s/sLength;
-
-      switch (this.get('outputUnit').index) {
-        case 0: // Hz
-          this.set({tone: avgFreq});
-          break;
-        case 1: // Bark
-          var avgBark = hzToBark( avgFreq );
-          this.set({tone: avgBark});
-          break;
-      }
-    }
-    else {
-      this.set({tone: 0});
-    }
-    this.trigger('toneChange', this.get('tone'));
-  },
   // Implementation of the HPS algorithm
   update: function () {
-    requestAnimationFrame(this.update.bind(this));
 
 
     var iterations = 7; // downsampling factor
     var data = this._data; 
     analyser.getByteFrequencyData(data);
 
-    // console.log(n);
     var n = data.length;
     var m = Math.floor(n/iterations);
     var spectrum = new Array(m);
-
     // Psychoacoustic compensation to increase the importance of higher frequencies?
     // 10 is an arbitrary constant
     // I would assume the opposite relationship :S
     for (var j = 0; j < m; j++) {
-      spectrum[j] = 1 + j/10;
+      spectrum[j] = 1 + j*30;
       // spectrum[j] = 1 ;
     }
     // Create the harmonic product spectrum with 50 being an arbitrary constant
@@ -294,38 +219,25 @@ app.ToneModel = Backbone.Model.extend({
       s2 += data[i] * data[i];
     }
     var variance = (s2 - (s*s) / n) / n;
-
-    // Get the fundamental frequency in hertz
+    // have to pass threshold variance to nto be noise
     if ( variance > this.get('varThreshold') ) {
-      var tone = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
-      switch (this.get('outputUnit').index) {
-        case 0: // Hz
-          this.set({tone: tone});
-          break;
-        case 1: // Bark
-          var toneInBark = hzToBark( tone );
-          this.set({tone: toneInBark});
-          break;
-      }
+        var tone = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
+        switch (this.get('outputUnit').index) {
+          case 0: // Hz
+            this.set({tone: tone});
+            break;
+          case 1: // Bark
+            var toneInBark = hzToBark( tone );
+            this.set({tone: toneInBark});
+            break;
+        }
     } else {
       this.set({tone: 0});
     }
 
-    console.log("updated");
-
-
-    // SONG PONG Specific part not used
-    // if (spectrum[max] - avg > 50 && spectrum[max] > 100) {
-    //   if (max > 10) {
-    //     // this.set({tone: oldTone++});
-    //   } else {
-    //     // this.set({tone: oldTone--});
-    //   }
-    // } else {
-    //     // this.set({tone: oldTone});
-    // }
-
+    // console.log("updated model loop with tone:" + this.get('tone'));
     this.trigger('toneChange', this.get('tone'));
+    this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
     
   

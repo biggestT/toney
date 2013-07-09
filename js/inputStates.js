@@ -8,8 +8,7 @@
     execute: function() {
       this._owner.get('microphoneInput').connect(this._owner.get('analysisInputNode'));
       console.log('listening to microphoneInput');
-      // this._owner.set({ playing: false });
-      this._owner.enableSoundAnalysis();
+      this._owner.startSoundAnalysis();
       this._owner.get('audio').pause();
       
     },
@@ -17,7 +16,7 @@
     },
     exit: function() {
       this._owner.get('microphoneInput').disconnect();
-      this._owner.disableSoundAnalysis();
+      this._owner.stopSoundAnalysis();
       console.log('stopped listening to microphoneInput');
     }
   });
@@ -26,8 +25,7 @@
       console.log('listening to soundfile');
       this._owner.get('soundFileInput').connect(this._owner.get('analysisInputNode'));
       this._owner.get('soundFileInput').connect(audioContext.destination);
-      // this._owner.set({ playing: true });
-      this._owner.enableSoundAnalysis();
+      this._owner.startSoundAnalysis();
       this._owner.get('audio').play();
 
     },
@@ -35,7 +33,7 @@
     },
     exit: function() {
       this._owner.get('soundFileInput').disconnect();
-      this._owner.disableSoundAnalysis();
+      this._owner.stopSoundAnalysis();
       console.log('stopped listening to soundfile');
     }
   });

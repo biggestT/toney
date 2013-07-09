@@ -110,9 +110,7 @@ app.ToneModel = Backbone.Model.extend({
   },
   startSoundAnalysis: function() {
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
-    // this.update();
     console.log("started sound analysis")
-    // this.update();
   },
   stopSoundAnalysis: function() {
     if ( this.animationID ) {
@@ -180,6 +178,7 @@ app.ToneModel = Backbone.Model.extend({
 
     var iterations = 7; // downsampling factor
     var data = this._data; 
+
     analyser.getByteFrequencyData(data);
 
     var n = data.length;
@@ -239,10 +238,6 @@ app.ToneModel = Backbone.Model.extend({
     this.trigger('toneChange', this.get('tone'));
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
-    
-  
-  
-
   
 });
 

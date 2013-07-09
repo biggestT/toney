@@ -13,18 +13,25 @@ var BaseState = Backbone.Model.extend({
 		this.count = 0.0;
   },
   update: function (t) {
-	  if (t > 0) {
-				// Normalise input value (in frequency unit) to fit canvas coordinates
-				this.prevTone = this.tone;
-				// this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
-				// @TODO fix smaller dynamic range 
-				// than considered in analysis
-				var currTone = ( t - 1 ) / (8 - 1 ); 
-				// Smoothing
-				this.tone = currTone * (1-this.owner.smoothing) + this.prevTone * this.owner.smoothing;
-				this.count++;
-				this.owner.draw();
+
+	if (t > 0) {
+		if (this.count == 0) {
+			this.owner.clearCanvas();
 		}
+		this.prevTone = this.tone;
+		// Normalise input value (in frequency unit) to fit canvas coordinates
+		// this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
+		// @TODO fix smaller dynamic range 
+		// than considered in analysis
+		var currTone = ( t - 3 ) / (5 - 3 ); // only works for barkscale
+		// Smoothing
+		this.tone = currTone * (1-this.owner.smoothing) + this.prevTone * this.owner.smoothing;
+		this.count++;
+		this.owner.draw();
+	}
+	else  {
+		this.count = 0;
+	}
   }
 });
 var microphoneSource = BaseState.extend({
@@ -50,10 +57,10 @@ var soundfileSource = BaseState.extend({
 var ToneView = Backbone.View.extend({
 	
 	tagName: 'canvas',
-	n: 200,
-	lineWidth: 4,
+	n: 100,
+	lineWidth: 20,
 	count: 0,
-	smoothing: 0.8,
+	smoothing: 0.8	,
 	colors: {
 		red: '#B0171F',
 		green: '#008B00',
@@ -97,6 +104,10 @@ app.ToneLineView = ToneView.extend({
 	  ctx.lineTo(c.width/n*(i+1), c.height - 10 - this.sourceState.tone*c.height  );
 	  ctx.stroke();
 	},
+	clearCanvas: function() {
+		var c = this.ctx.canvas;
+		this.ctx.clearRect(0, 0, c.width, c.height);
+	},
 	drawGradientLine: function(colors) {
 		var ctx = this.ctx;
 		var c = ctx.canvas;
@@ -114,6 +125,7 @@ app.ToneLineView = ToneView.extend({
 		ctx.lineWidth = this.lineWidth;
 		ctx.strokeStyle = grad
 		ctx.beginPath();
+		ctx.lineCap="round";
 	  ctx.moveTo(xPath[0], yPath[0]);
 	  ctx.lineTo(xPath[1], yPath[1]);
 	  ctx.stroke();

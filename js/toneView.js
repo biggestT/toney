@@ -8,7 +8,7 @@ var BaseState = Backbone.Model.extend({
 
   initialize: function(owner) {
     this.owner = owner;
-	this.count = 0;
+    this.tones = new Array();
   },
   update: function (t) {
 
@@ -17,24 +17,14 @@ var BaseState = Backbone.Model.extend({
 		// this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
 		// @TODO fix smaller dynamic range 
 		// than considered in analysis
-		var currTone = ( t - 2 ) / (5 - 2 ); // only works for barkscale
+
+		var currTone = ( t - 1 ) / (6 - 1 ); // only works for barkscale
 		
-		if (this.count == 0) {
-			this.owner.clearCanvas();
-			this.prevTone = currTone;
-		}
-		else {
-			this.prevTone = this.tone;
-		}
-		// Smoothing
-		this.tone = currTone * (1-this.owner.smoothing) + this.prevTone * this.owner.smoothing;
-		// this.tone = currTone;
-		this.count++;
+		this.tones.push(currTone);
 		this.owner.draw();
 	}
 	else  {
-		console.log(this.count);
-		this.count = 0;
+		this.tones = [];
 	}
   }
 });
@@ -62,7 +52,7 @@ var ToneView = Backbone.View.extend({
 	
 	tagName: 'canvas',
 	n: 100,
-	lineWidth: 20,
+	lineWidth: 15,
 	count: 0,
 	smoothing: 0.7,
 	colors: {
@@ -84,8 +74,6 @@ app.ToneLineView = ToneView.extend({
 		this.sourceStates.soundfile = new soundfileSource(this);
 
 		this.sourceState = this.sourceStates.soundfile;
-
-		this.setAxis()
 		this.ctx = this.options.ctx;
 
 		this.listenTo(this.model, "toneChange", this.update);
@@ -114,25 +102,36 @@ app.ToneLineView = ToneView.extend({
 	drawGradientLine: function(colors) {
 		var ctx = this.ctx;
 		var c = ctx.canvas;
-		var n = this.n;
-		var i = this.sourceState.count;
+		var l = this.n;
+		var tones = this.sourceState.tones;
+		var n = tones.length;
 
-		// Path to draw in x and y dimensions with index 0 being start and 1 being stop
-		var xPath = [c.width/n*i, c.width/n*(i+1)];
-		var yPath = [c.height - 10 - this.sourceState.prevTone*c.height , c.height - 10 - this.sourceState.tone*c.height];
+		this.clearCanvas();
 
-		var grad= this.ctx.createLinearGradient(0, 0, c.width, c.height);
-		// var grad= this.ctx.createLinearGradient(xPath[0], xPath[1], yPath[0], yPath[1]);
+		var gradientStartX = c.width/2+c.width/l*(0-n/2);
+		var gradientStopX = c.width/2+c.width/l*(n-n/2);
+		var grad = this.ctx.createLinearGradient(gradientStartX, 0, gradientStopX, c.height);
 		grad.addColorStop(0, colors[0]);
 		grad.addColorStop(1, colors[1]);
 
-		ctx.lineWidth = this.lineWidth;
-		ctx.strokeStyle = grad
-		ctx.beginPath();
-		ctx.lineCap="round";
-	  ctx.moveTo(xPath[0], yPath[0]);
-	  ctx.lineTo(xPath[1], yPath[1]);
-	  ctx.stroke();
+		for (var i = 1; i < n; i++) {
+			var startX = c.width/2+c.width/l*(i-n/2);
+			var endX = c.width/2+c.width/l*((i+1)-n/2);
+			var startY = c.height - tones[i-1]*c.height;
+			var endY = c.height - tones[i]*c.height;
+			var xPath = [startX, endX];
+			var yPath = [startY, endY];
+
+			ctx.lineWidth = this.lineWidth;
+			ctx.strokeStyle = grad
+			ctx.beginPath();
+			ctx.lineCap="round";
+			
+			ctx.moveTo(xPath[0], yPath[0]);
+      		ctx.lineTo(xPath[1], yPath[1]);
+
+			ctx.stroke();
+		};
 	},
 	setAxis: function() {
 		this.min = this.model.get('outputUnit').min;

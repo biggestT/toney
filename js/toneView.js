@@ -8,28 +8,32 @@ var BaseState = Backbone.Model.extend({
 
   initialize: function(owner) {
     this.owner = owner;
-    this.prevTone = 0.0;
-		this.tone = 0.0;
-		this.count = 0.0;
+	this.count = 0;
   },
   update: function (t) {
 
 	if (t > 0) {
-		if (this.count == 0) {
-			this.owner.clearCanvas();
-		}
-		this.prevTone = this.tone;
 		// Normalise input value (in frequency unit) to fit canvas coordinates
 		// this.tone = ( t - this.owner.min ) / (this.owner.max - this.owner.min );
 		// @TODO fix smaller dynamic range 
 		// than considered in analysis
-		var currTone = ( t - 3 ) / (5 - 3 ); // only works for barkscale
+		var currTone = ( t - 2 ) / (5 - 2 ); // only works for barkscale
+		
+		if (this.count == 0) {
+			this.owner.clearCanvas();
+			this.prevTone = currTone;
+		}
+		else {
+			this.prevTone = this.tone;
+		}
 		// Smoothing
 		this.tone = currTone * (1-this.owner.smoothing) + this.prevTone * this.owner.smoothing;
+		// this.tone = currTone;
 		this.count++;
 		this.owner.draw();
 	}
 	else  {
+		console.log(this.count);
 		this.count = 0;
 	}
   }
@@ -60,7 +64,7 @@ var ToneView = Backbone.View.extend({
 	n: 100,
 	lineWidth: 20,
 	count: 0,
-	smoothing: 0.8	,
+	smoothing: 0.7,
 	colors: {
 		red: '#B0171F',
 		green: '#008B00',
@@ -97,7 +101,6 @@ app.ToneLineView = ToneView.extend({
 		var c = ctx.canvas;
 		var n = this.n;
 		var i = this.sourceState.count;
-
 		ctx.strokeStyle = color;
 		ctx.beginPath();
 	  ctx.moveTo(c.width/n*i, c.height - 10 - this.sourceState.prevTone*c.height  );
@@ -118,7 +121,8 @@ app.ToneLineView = ToneView.extend({
 		var xPath = [c.width/n*i, c.width/n*(i+1)];
 		var yPath = [c.height - 10 - this.sourceState.prevTone*c.height , c.height - 10 - this.sourceState.tone*c.height];
 
-		var grad= this.ctx.createLinearGradient(xPath[0], xPath[1], yPath[0], yPath[1]);
+		var grad= this.ctx.createLinearGradient(0, 0, c.width, c.height);
+		// var grad= this.ctx.createLinearGradient(xPath[0], xPath[1], yPath[0], yPath[1]);
 		grad.addColorStop(0, colors[0]);
 		grad.addColorStop(1, colors[1]);
 

@@ -7,7 +7,9 @@ body {
   color:#777;
   font-weight:300;
 }
-
+.post-full img {
+  display: block;
+}
 .logo {
   margin-right: 20px;
   margin-bottom: 20px;

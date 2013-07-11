@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "Day 1 - Researching Algorithms"
+title: "Researching Algorithms"
 description: "How do I detect the pitch?"
-category: Days
+category: Algorithm
 tags: [algorithm, HPS]
 ---
 {% include JB/setup %}

@@ -22,11 +22,12 @@ var units = {bark: barkUnit, hertz: hertzUnit};
 
 app.ToneModel = Backbone.Model.extend({
   defaults: {
-    updateRate: 30,
     smoothing: 0.0,
     resolution: 2048,
+    length: 100,
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
+    iterations: 7, // downsampling factor for HPS algorithm
     outputUnit: units['Hz'],
     fmin: hertzUnit.min,
     fmax: hertzUnit.max,
@@ -172,11 +173,9 @@ app.ToneModel = Backbone.Model.extend({
      console.log('changed outputUnit to: ' + unitName);
     }
   },
-  // Implementation of the HPS algorithm
-  update: function () {
-
-
-    var iterations = 7; // downsampling factor
+  // Implementation of the HPS algorithm plus simple noise/silence detection
+  getPitchHPS: function () {
+    var iterations = this.get('iterations');
     var data = this._data; 
 
     analyser.getByteFrequencyData(data);
@@ -184,14 +183,11 @@ app.ToneModel = Backbone.Model.extend({
     var n = data.length;
     var m = Math.floor(n/iterations);
     var spectrum = new Array(m);
-    // Psychoacoustic compensation to increase the importance of higher frequencies?
-    // 10 is an arbitrary constant
-    // I would assume the opposite relationship :S
+    // Psychoacoustic compensation to increase the importance of higher frequencies with an arbitrary constant
     for (var j = 0; j < m; j++) {
       spectrum[j] = 1 + j*30;
-      // spectrum[j] = 1 ;
     }
-    // Create the harmonic product spectrum with 50 being an arbitrary constant
+    // Create the harmonic product spectrum with an arbitrary constant
     for (var i = 1; i < iterations; i++) {
       for (var j = 0; j < m; j++) {
         spectrum[j] *= data[j*i] / 50;
@@ -220,22 +216,79 @@ app.ToneModel = Backbone.Model.extend({
     var variance = (s2 - (s*s) / n) / n;
     // have to pass threshold variance to nto be noise
     if ( variance > this.get('varThreshold') ) {
-        var tone = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
-        switch (this.get('outputUnit').index) {
-          case 0: // Hz
-            this.set({tone: tone});
-            break;
-          case 1: // Bark
-            var toneInBark = hzToBark( tone );
-            this.set({tone: toneInBark});
-            break;
-        }
+        var toneInHertz = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
+        return toneInHertz;
     } else {
-      this.set({tone: 0});
+      return -1;
     }
 
-    // console.log("updated model loop with tone:" + this.get('tone'));
-    this.trigger('toneChange', this.get('tone'));
+  },
+  // Simple Linear Regression Analysis
+  getLinearApproximation: function(tones) {
+    var n = tones.length;     
+    var sumXY = 0;
+    var sumX = 0;
+    var sumY = 0;
+    var sumXX = 0;
+    var sumYY = 0;
+
+    var xy = [];
+
+    for (var i = 0; i < n; i++) {
+      sumX += i;
+      sumY += tones[i];
+      sumXX += i*i;
+      sumYY += tones[i]*tones[i];
+      sumXY += tones[i]*i;
+    };
+
+    var avgX = sumX/n;
+    var avgY = sumY/n;
+    var avgXY = sumXY/n;
+    var avgXX = sumXX/n;
+    var avgYY = sumYY/n;
+
+    var varXY = avgXY - avgX*avgY;
+    var varX = avgXX - avgX*avgX;
+    var varY = avgYY - avgY*avgY;
+
+    var b = varXY/varX;
+    var a = avgY - b*avgX;
+
+    
+    var corrCoeff = (varXY*varXY)/(varX*varY);
+    return [a, b, corrCoeff];
+  },
+  update: function () {
+
+    var input = this.get('inputState');
+    var currPitch = this.getPitchHPS();
+
+    // only update line if not silence or noise
+    if (currPitch > 0) {
+      switch (this.get('outputUnit').index) {
+          case 0: // Hz
+            // no need to do anything, tone already in Hz
+            break;
+          case 1: // Bark
+            currPitch = hzToBark( currPitch );
+            currPitch = ( currPitch - 1 ) / (5 - 1 ); 
+            break;
+      }   
+      input.addTone(currPitch);
+      var tones = input.getTones();
+
+      var linApprox = this.getLinearApproximation(tones);
+      var a = linApprox[0];
+      var b = linApprox[1];
+      var r2 = linApprox[2];
+      
+      this.trigger('toneChange', [a, b, tones.length]);
+    } 
+    else {
+      input.clearTones();
+    }
+    
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
   

@@ -99,7 +99,7 @@ app.ToneModel = Backbone.Model.extend({
    
     console.log(this.get('audio'));
     // Toggle play pause when soundfile is finished playing
-    $(this.get('audio')).bind('ended', this.playToggle.bind(this));
+    $(this.get('audio')).bind('ended', this.audioEnded.bind(this));
   },
   initializeMicrophone: function (stream) {
     this.set({microphoneInput: audioContext.createMediaStreamSource( stream ) });
@@ -108,18 +108,19 @@ app.ToneModel = Backbone.Model.extend({
   },
   setupNewSoundfile: function() {
     console.log("audiofilesource changed");
-    this.get('audio').src = this.get('soundfileSource');
   },
   startSoundAnalysis: function() {
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
-    console.log("started sound analysis")
   },
   stopSoundAnalysis: function() {
     if ( this.animationID ) {
       window.cancelAnimationFrame(this.animationID);
-      console.log("cancelled animationframe");
     }
     this.animationID = 0;
+  },
+  audioEnded: function () {
+    this.get('audio').stop();
+    this.playToggle();
   },
   changeState: function(state) {
     var inputState = this.get('inputState');
@@ -145,7 +146,6 @@ app.ToneModel = Backbone.Model.extend({
     else {
       this.changeState(this.get('inputStates')['soundfile']);
     }
-    console.log(this.get('playing'));    
   },
   setupAudioGraph: function() {
     // Create the filters for speech clipping

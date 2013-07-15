@@ -16,19 +16,21 @@ hzToBark = function (Hz) {
 var audioContext = null,
     analyser = null,
     microphoneInput = null;
-var hertzUnit = { index: 0, name: 'Hz', min: 100.0, max: 3000.0 };
+var hertzUnit = { index: 0, name: 'Hz', min: 100.0, max: 3000.0 }; // Set limits for analysis in Hz here
 var barkUnit = { index: 1, name: 'bark', min: hzToBark(hertzUnit.min), max: hzToBark(hertzUnit.max) };
 var units = {bark: barkUnit, hertz: hertzUnit};
 
 app.ToneModel = Backbone.Model.extend({
   defaults: {
-    updateRate: 30,
     smoothing: 0.0,
     resolution: 2048,
+    length: 100,
+    outLimits: [Number.MAX_VALUE, Number.MIN_VALUE],
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
+    iterations: 7, // downsampling factor for HPS algorithm
     outputUnit: units['Hz'],
-    fmin: hertzUnit.min,
+    fmin: hertzUnit.min, 
     fmax: hertzUnit.max,
     soundfileSource: 'audio/ma_short.wav',
     microphoneInput: null,
@@ -97,7 +99,7 @@ app.ToneModel = Backbone.Model.extend({
    
     console.log(this.get('audio'));
     // Toggle play pause when soundfile is finished playing
-    $(this.get('audio')).bind('ended', this.playToggle.bind(this));
+    $(this.get('audio')).bind('ended', this.audioEnded.bind(this));
   },
   initializeMicrophone: function (stream) {
     this.set({microphoneInput: audioContext.createMediaStreamSource( stream ) });
@@ -106,18 +108,19 @@ app.ToneModel = Backbone.Model.extend({
   },
   setupNewSoundfile: function() {
     console.log("audiofilesource changed");
-    this.get('audio').src = this.get('soundfileSource');
   },
   startSoundAnalysis: function() {
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
-    console.log("started sound analysis")
   },
   stopSoundAnalysis: function() {
     if ( this.animationID ) {
       window.cancelAnimationFrame(this.animationID);
-      console.log("cancelled animationframe");
     }
     this.animationID = 0;
+  },
+  audioEnded: function () {
+    this.get('audio').stop();
+    this.playToggle();
   },
   changeState: function(state) {
     var inputState = this.get('inputState');
@@ -143,7 +146,6 @@ app.ToneModel = Backbone.Model.extend({
     else {
       this.changeState(this.get('inputStates')['soundfile']);
     }
-    console.log(this.get('playing'));    
   },
   setupAudioGraph: function() {
     // Create the filters for speech clipping
@@ -172,11 +174,9 @@ app.ToneModel = Backbone.Model.extend({
      console.log('changed outputUnit to: ' + unitName);
     }
   },
-  // Implementation of the HPS algorithm
-  update: function () {
-
-
-    var iterations = 7; // downsampling factor
+  // Implementation of the HPS algorithm plus simple noise/silence detection
+  getPitchHPS: function () {
+    var iterations = this.get('iterations');
     var data = this._data; 
 
     analyser.getByteFrequencyData(data);
@@ -184,14 +184,11 @@ app.ToneModel = Backbone.Model.extend({
     var n = data.length;
     var m = Math.floor(n/iterations);
     var spectrum = new Array(m);
-    // Psychoacoustic compensation to increase the importance of higher frequencies?
-    // 10 is an arbitrary constant
-    // I would assume the opposite relationship :S
+    // Psychoacoustic compensation to increase the importance of higher frequencies with an arbitrary constant
     for (var j = 0; j < m; j++) {
       spectrum[j] = 1 + j*30;
-      // spectrum[j] = 1 ;
     }
-    // Create the harmonic product spectrum with 50 being an arbitrary constant
+    // Create the harmonic product spectrum with an arbitrary constant
     for (var i = 1; i < iterations; i++) {
       for (var j = 0; j < m; j++) {
         spectrum[j] *= data[j*i] / 50;
@@ -220,22 +217,85 @@ app.ToneModel = Backbone.Model.extend({
     var variance = (s2 - (s*s) / n) / n;
     // have to pass threshold variance to nto be noise
     if ( variance > this.get('varThreshold') ) {
-        var tone = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
-        switch (this.get('outputUnit').index) {
-          case 0: // Hz
-            this.set({tone: tone});
-            break;
-          case 1: // Bark
-            var toneInBark = hzToBark( tone );
-            this.set({tone: toneInBark});
-            break;
-        }
+        var toneInHertz = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
+        return toneInHertz;
     } else {
-      this.set({tone: 0});
+      return -1;
     }
 
-    // console.log("updated model loop with tone:" + this.get('tone'));
-    this.trigger('toneChange', this.get('tone'));
+  },
+  // Simple Linear Regression Analysis
+  // see http://mathworld.wolfram.com/LeastSquaresFitting.html
+  getLinearApproximation: function(tones) {
+    var n = tones.length;     
+    var sumXY = 0;
+    var sumX = 0;
+    var sumY = 0;
+    var sumXX = 0;
+    var sumYY = 0;
+
+    for (var i = 0; i < n; i++) {
+      sumX += i;
+      sumY += tones[i];
+      sumXX += i*i;
+      sumYY += tones[i]*tones[i];
+      sumXY += tones[i]*i;
+    };
+
+    var avgX = sumX/n;
+    var avgY = sumY/n;
+    var avgXY = sumXY/n;
+    var avgXX = sumXX/n;
+    var avgYY = sumYY/n;
+
+    var varXY = avgXY - avgX*avgY;
+    var varX = avgXX - avgX*avgX;
+    var varY = avgYY - avgY*avgY;
+
+    var b = varXY/varX;
+    var a = avgY - b*avgX;
+
+    
+    var corrCoeff = (varXY*varXY)/(varX*varY); // not used ATM
+
+    return [a, b, n]; // return m value, k value and the length of the straight line
+  },
+  update: function () {
+
+    var input = this.get('inputState');
+    var currPitch = this.getPitchHPS();
+    var unit = this.get('outputUnit');
+    var min = unit.min;
+    var max = unit.max;
+
+    // only update line if not silence or noise
+    if (currPitch > 0) {
+      
+      switch (unit.index) {
+          case 0: // Hz
+            // no need to do anything, tone already in Hz
+            break;
+          case 1: // Bark
+            currPitch = hzToBark( currPitch );
+            break;
+      }
+      currPitch = ( currPitch - min ) / (max - min); // normalise according to analysis boundaries
+
+      // @TODO needs to be normalised again to plot within an as small frequency range as possible? Do this in view or model?
+      // outLimits[0] = (currPitch < outLimits[0]) ? currPitch : outLimits[0];
+      // outLimits[1] = (currPitch > outLimits[1]) ? currPitch : outLimits[1];
+    
+      input.addTone(currPitch);
+      var tones = input.getTones();
+
+      var line = this.getLinearApproximation(tones);
+      
+      this.trigger('toneChange', line);
+    } 
+    else {
+      input.clearTones();
+    }
+    
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
   

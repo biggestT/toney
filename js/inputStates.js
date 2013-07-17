@@ -6,18 +6,33 @@ BaseState = Backbone.Model.extend({
 });
 SourceState = Backbone.Model.extend({
   defaults: {
-    ampl: 0.0
+    ampl: 0.0,
+    prevK: 0.0,
+    lines: []
   },
   initialize: function(owner) {
     this._owner = owner; // not sure how to call superConstructor
-    this._tones = [];
-    this.ampl = 0.1;
+    this._tones = []; // tones for currently updated toneline
+    this._lines = [[0,0]]; // all tonelines belonging to one speech sample
+
     // each sourcestate has its own dynamic range where its toneline is plotted
     // var unit = owner.get(outputUnit);
     // this._lineBounds = [unit.min, unit.max];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
   },
   addTone: function (t) {
     this._tones.push(t);
+  },
+  setLine: function (line) {
+    this._lines[this._lines.length-1] = line;
+  },
+  clearLines: function () {
+    this._lines = [[0,0]];
+  },
+  addLine: function (line) {
+    this._lines.push(line);
+  },
+  getLines: function () {
+    return this._lines;
   },
   clearTones: function () {
     this._tones = [];

@@ -5,32 +5,39 @@ Written by Tor Nilsson Öhrn in 2013
 var app = app || {};
 
 var BaseState = Backbone.Model.extend({
-
-  initialize: function(owner) {
-    this.owner = owner;
-    this.line = [0,0,0];
+	defaults: {
+		// test: 0
+	},
+  initialize: function(o) {
+    this.owner = o;
+    this.lines = [];
+    console.log(this.get('color'));
   },
-  updateLine: function (l) {
-		this.line = l;
+  updateLines: function (l) {
+		this.lines = l;
 		this.owner.draw();
+	},
+	draw: function() {
+  	this.owner.drawingColors = this.get('color');
+  	for (var i = 0; i < this.lines.length; i++) {
+  		this.owner.drawGradientLine(this.lines[i]);
+  	};
 	}
 	
 });
 var microphoneSource = BaseState.extend({
-	
-  draw: function() {
-  	this.owner.drawingColors = this.owner.colors['redGradient'];
-    this.owner.drawGradientLine(this.line);
-  },
+	defaults: {
+		test: 0,
+		color: ['#BB0805', '#FF4D2E']
+	},
   nextState: function () {
   	this.owner.changeState( this.owner.sourceStates.soundfile );
   }
  });
 var soundfileSource = BaseState.extend({
-  draw: function() {
-    this.owner.drawingColors = this.owner.colors['greenGradient'];
-    this.owner.drawGradientLine(this.line);
-  },
+	defaults: {
+		color: ['#0BB400', '#2EFE3E']
+	},
   nextState: function () {
   	this.owner.changeState( this.owner.sourceStates.microphone );
   }
@@ -44,11 +51,7 @@ var ToneView = Backbone.View.extend({
 	min: 1,
 	max: 5,
 	count: 0,
-	smoothing: 0.7,
-	colors: {
-		redGradient: ['#BB0805', '#FF4D2E'],
-		greenGradient: ['#0BB400', '#2EFE3E']
-	}
+	smoothing: 0.7
 });
 
 // Concrete Viewer that outputs the toneline which is characteristic to Toney
@@ -117,8 +120,8 @@ app.ToneLineView = ToneView.extend({
 	changeState: function( state ) {
     this.sourceState = state;
 	},
-	update: function (line) {
-		this.sourceState.updateLine(line);
+	update: function (lines) {
+		this.sourceState.updateLines(lines);
 	},
 	nextState: function () {
 		this.sourceState.nextState();

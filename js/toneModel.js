@@ -15,7 +15,7 @@ app.ToneModel = Backbone.Model.extend({
     length: 100,
     outLimits: [Number.MAX_VALUE, Number.MIN_VALUE],
     //  Parameters for clipping of uninteresting audio data
-    varThreshold: 1000,
+    varThreshold: 1400,
     iterations: 7, // downsampling factor for HPS algorithm
     fmin: 100, 
     fmax: 3000,
@@ -255,7 +255,6 @@ app.ToneModel = Backbone.Model.extend({
     if (currPitch > 0) {
       
       currPitch = ( currPitch - min ) / (max - min); // normalise according to analysis boundaries
-
       input.addTone(currPitch);
       var tones = input.getTones();
 
@@ -266,14 +265,31 @@ app.ToneModel = Backbone.Model.extend({
         aM = a; 
       }
       line[0] = line[0] / aM; // normalise line according to current maximum plot range
+
+      // DETECT NEED FOR SEGMENTED REGRESSION ANALYSIS 
+      var signChange = line[0]*input.get('prevK');
+      if (signChange < -0.0002) {
+        console.log(signChange);
+        input.addLine(line);
+        input.clearTones();
+      }
+      else {
+        input.setLine(line);
+      }
+      
+      // input.addLine(line);
+      input.set({prevK: line[0]});
+
       this.set({aMax: aM});
-      this.trigger('toneChange', line);
+      this.trigger('toneChange', input.getLines() );
     } 
     // Reset data for the current input to prepare for the next speech sample
     else {
       input.clearTones();
+      input.clearLines();
       input.set({ ampl: 0.1 });
     }
+    console.log(this.get('audio').currentTime);
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
   

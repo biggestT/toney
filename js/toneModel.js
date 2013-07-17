@@ -1,24 +1,12 @@
 /*
-Written by Tor Nilsson Öhrn in February of 2013
-Inspired by Craig Spence's:
-http://phenomnomnominal.github.com/docs/tuner.html 
-and:
-http://webaudiodemos.appspot.com/input/index.html
+Written by Tor Nilsson Öhrn in 2013 with help from the open source community
 */
 
 var app = app || {};
 // 'use strict';
-hzToBark = function (Hz) {
-    // Traunmüller's conversion
-    var bark = 26.81 / ( 1+1960/Hz ) - 0.53;
-    return bark;
-};
 var audioContext = null,
     analyser = null,
     microphoneInput = null;
-var hertzUnit = { index: 0, name: 'Hz', min: 100.0, max: 3000.0 }; // Set limits for analysis in Hz here
-var barkUnit = { index: 1, name: 'bark', min: hzToBark(hertzUnit.min), max: hzToBark(hertzUnit.max) };
-var units = {bark: barkUnit, hertz: hertzUnit};
 
 app.ToneModel = Backbone.Model.extend({
   defaults: {
@@ -29,9 +17,9 @@ app.ToneModel = Backbone.Model.extend({
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
     iterations: 7, // downsampling factor for HPS algorithm
-    outputUnit: units['Hz'],
-    fmin: hertzUnit.min, 
-    fmax: hertzUnit.max,
+    fmin: 100, 
+    fmax: 3000,
+    aMax: 0.1,
     soundfileSource: 'audio/ma_short.wav',
     microphoneInput: null,
     soundFileInput: null,
@@ -92,12 +80,11 @@ app.ToneModel = Backbone.Model.extend({
     navigator.getUserMedia( {audio:true}, this.initializeMicrophone.bind(this) , function(err) {console.log(err)} );
 
 
-    // EVENT NOTIFICATION
+    // EVENT BINDING
 
     // redo soundfile set up if the soundfile source changes 
     this.on('change:soundfileSource', this.setupNewSoundfile());
    
-    console.log(this.get('audio'));
     // Toggle play pause when soundfile is finished playing
     $(this.get('audio')).bind('ended', this.audioEnded.bind(this));
   },
@@ -119,7 +106,8 @@ app.ToneModel = Backbone.Model.extend({
     this.animationID = 0;
   },
   audioEnded: function () {
-    this.get('audio').stop();
+    this.get('audio').currentTime = 0;
+    console.log('audio finished playing');
     this.playToggle();
   },
   changeState: function(state) {
@@ -145,6 +133,7 @@ app.ToneModel = Backbone.Model.extend({
     }
     else {
       this.changeState(this.get('inputStates')['soundfile']);
+      console.log('soundfile state');
     }
   },
   setupAudioGraph: function() {
@@ -166,13 +155,6 @@ app.ToneModel = Backbone.Model.extend({
     hpF.frequency.value = this.get('fmin'); // Set cutoff 
     console.log("audio analysis graph set up!");
     return(analysisInputNode);
-  },
-  setOutputUnit: function( unitName ) {
-    if ( $.inArray(unitName, units) ) {
-     this.set({ outputUnit: units[unitName] });
-     this.trigger('unitChange', [this.get('outputUnit').min,  this.get('outputUnit').max]); 
-     console.log('changed outputUnit to: ' + unitName);
-    }
   },
   // Implementation of the HPS algorithm plus simple noise/silence detection
   getPitchHPS: function () {
@@ -252,50 +234,46 @@ app.ToneModel = Backbone.Model.extend({
     var varX = avgXX - avgX*avgX;
     var varY = avgYY - avgY*avgY;
 
-    var b = varXY/varX;
-    var a = avgY - b*avgX;
+    var k = varXY/varX;
+    // No need to use m-value since we are only interested in relative change in pitch over time,
+    // i.e the slope and length of the line
+    // var a = avgY - b*avgX; 
 
-    
     var corrCoeff = (varXY*varXY)/(varX*varY); // not used ATM
 
-    return [a, b, n]; // return m value, k value and the length of the straight line
+    return [k, n]; //  k value and the length of the straight line
   },
   update: function () {
 
     var input = this.get('inputState');
     var currPitch = this.getPitchHPS();
-    var unit = this.get('outputUnit');
-    var min = unit.min;
-    var max = unit.max;
+    var min = this.get('fmin');
+    var max = this.get('fmax');
+    var aM = this.get('aMax'); // maximum amplitude of any one of the lines so far is used for dynamic plot range
 
     // only update line if not silence or noise
     if (currPitch > 0) {
       
-      switch (unit.index) {
-          case 0: // Hz
-            // no need to do anything, tone already in Hz
-            break;
-          case 1: // Bark
-            currPitch = hzToBark( currPitch );
-            break;
-      }
       currPitch = ( currPitch - min ) / (max - min); // normalise according to analysis boundaries
 
-      // @TODO needs to be normalised again to plot within an as small frequency range as possible? Do this in view or model?
-      // outLimits[0] = (currPitch < outLimits[0]) ? currPitch : outLimits[0];
-      // outLimits[1] = (currPitch > outLimits[1]) ? currPitch : outLimits[1];
-    
       input.addTone(currPitch);
       var tones = input.getTones();
 
       var line = this.getLinearApproximation(tones);
-      
+      var a = Math.abs(line[0]*line[1]); // amplitude of line is k * n
+      input.set({ampl: a});
+      if (a > this.get('inputStates')['microphone'].get('ampl') && a > this.get('inputStates')['soundfile'].get('ampl')) { 
+        aM = a; 
+      }
+      line[0] = line[0] / aM; // normalise line according to current maximum plot range
+      this.set({aMax: aM});
       this.trigger('toneChange', line);
     } 
+    // Reset data for the current input to prepare for the next speech sample
     else {
       input.clearTones();
+      input.set({ ampl: 0.1 });
     }
-    
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
   

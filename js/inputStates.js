@@ -5,10 +5,13 @@ BaseState = Backbone.Model.extend({
   }
 });
 SourceState = Backbone.Model.extend({
-
+  defaults: {
+    ampl: 0.0
+  },
   initialize: function(owner) {
     this._owner = owner; // not sure how to call superConstructor
     this._tones = [];
+    this.ampl = 0.1;
     // each sourcestate has its own dynamic range where its toneline is plotted
     // var unit = owner.get(outputUnit);
     // this._lineBounds = [unit.min, unit.max];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
@@ -21,9 +24,6 @@ SourceState = Backbone.Model.extend({
   },
   getTones: function () {
     return this._tones;
-  },
-  clearBounds: function () {
-    // this._lineBounds = [];
   }
 });
 microphoneState = SourceState.extend({

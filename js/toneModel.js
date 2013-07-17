@@ -1,9 +1,5 @@
 /*
-Written by Tor Nilsson Öhrn in February of 2013
-Inspired by Craig Spence's:
-http://phenomnomnominal.github.com/docs/tuner.html 
-and:
-http://webaudiodemos.appspot.com/input/index.html
+Written by Tor Nilsson Öhrn in 2013 with help from the open source community
 */
 
 var app = app || {};
@@ -23,6 +19,7 @@ app.ToneModel = Backbone.Model.extend({
     iterations: 7, // downsampling factor for HPS algorithm
     fmin: 100, 
     fmax: 3000,
+    aMax: 0.1,
     soundfileSource: 'audio/ma_short.wav',
     microphoneInput: null,
     soundFileInput: null,
@@ -242,7 +239,6 @@ app.ToneModel = Backbone.Model.extend({
     // i.e the slope and length of the line
     // var a = avgY - b*avgX; 
 
-    
     var corrCoeff = (varXY*varXY)/(varX*varY); // not used ATM
 
     return [k, n]; //  k value and the length of the straight line
@@ -253,28 +249,31 @@ app.ToneModel = Backbone.Model.extend({
     var currPitch = this.getPitchHPS();
     var min = this.get('fmin');
     var max = this.get('fmax');
+    var aM = this.get('aMax'); // maximum amplitude of any one of the lines so far is used for dynamic plot range
 
     // only update line if not silence or noise
     if (currPitch > 0) {
       
       currPitch = ( currPitch - min ) / (max - min); // normalise according to analysis boundaries
 
-      // @TODO needs to be normalised again to plot within an as small frequency range as possible? Do this in view or model?
-      // outLimits[0] = (currPitch < outLimits[0]) ? currPitch : outLimits[0];
-      // outLimits[1] = (currPitch > outLimits[1]) ? currPitch : outLimits[1];
-      
       input.addTone(currPitch);
       var tones = input.getTones();
 
       var line = this.getLinearApproximation(tones);
-      
-      
+      var a = Math.abs(line[0]*line[1]); // amplitude of line is k * n
+      input.set({ampl: a});
+      if (a > this.get('inputStates')['microphone'].get('ampl') && a > this.get('inputStates')['soundfile'].get('ampl')) { 
+        aM = a; 
+      }
+      line[0] = line[0] / aM; // normalise line according to current maximum plot range
+      this.set({aMax: aM});
       this.trigger('toneChange', line);
     } 
+    // Reset data for the current input to prepare for the next speech sample
     else {
       input.clearTones();
+      input.set({ ampl: 0.1 });
     }
-    // console.log(this.get('audio').currentTime); // trying to detect playback bug #1
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
   

@@ -268,7 +268,7 @@ app.ToneModel = Backbone.Model.extend({
 
       // DETECT NEED FOR SEGMENTED REGRESSION ANALYSIS 
       var signChange = line[0]*input.get('prevK');
-      if (signChange < -0.0002) {
+      if (signChange < -0.0002 && line[1] > 5) { // only start plotting new line if the flip is great enough and the line long enough
         console.log(signChange);
         input.addLine(line);
         input.clearTones();
@@ -289,7 +289,7 @@ app.ToneModel = Backbone.Model.extend({
       input.clearLines();
       input.set({ ampl: 0.1 });
     }
-    console.log(this.get('audio').currentTime);
+    // console.log(this.get('audio').currentTime); // trying to detect playback issue #1
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   }
   

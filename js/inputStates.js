@@ -8,7 +8,10 @@ SourceState = Backbone.Model.extend({
 
   initialize: function(owner) {
     this._owner = owner; // not sure how to call superConstructor
-    this._tones = [];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
+    this._tones = [];
+    // each sourcestate has its own dynamic range where its toneline is plotted
+    // var unit = owner.get(outputUnit);
+    // this._lineBounds = [unit.min, unit.max];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
   },
   addTone: function (t) {
     this._tones.push(t);
@@ -18,6 +21,9 @@ SourceState = Backbone.Model.extend({
   },
   getTones: function () {
     return this._tones;
+  },
+  clearBounds: function () {
+    // this._lineBounds = [];
   }
 });
 microphoneState = SourceState.extend({
@@ -34,12 +40,26 @@ microphoneState = SourceState.extend({
   }
 });
 soundfileState = SourceState.extend({
+
   execute: function() {
     this._owner.get('soundFileInput').connect(this._owner.get('analysisInputNode'));
     this._owner.get('soundFileInput').connect(audioContext.destination);
     this._owner.startSoundAnalysis();
-    this._owner.get('audio').play();
-
+    var a = this._owner.get('audio');
+    a.play();
+    // console.log( a); // Trying to detect playback bug
+    // console.log(a.data('events'));
+    // playAudio = function (e) {
+    //   this._owner.get('audio').play();
+    //   console.log('audio can now be played');
+    // }
+    // a.bind('canplay', function () {
+    //   console.log('audio canplay fired');
+    // });
+    // a.oncanplay = playAudio;  
+    // a.addEventListener("canplay" , function () {
+    // });
+    console.log( a); // Trying to detect playback bug
   },
   start: function() {
   },

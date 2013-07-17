@@ -76,16 +76,15 @@ app.ToneLineView = ToneView.extend({
 		this.sourceStates.soundfile.draw();
 		if (!this.model.get('playing')) {
 			this.sourceStates.microphone.draw();
-		}
+		} 
 	},
   drawGradientLine: function(line) {
 		var ctx = this.ctx;
 		var c = ctx.canvas;
 		var l = this.length;
 		var colors = this.drawingColors;
-		var a = line[0];
-		var b = line[1];
-		var n = line[2];
+		var k = line[0];
+		var n = line[1];
 
 		var gradientStartX = c.width/2+c.width/l*(0-n/2);
 		var gradientStopX = c.width/2+c.width/l*(n-n/2);
@@ -93,8 +92,8 @@ app.ToneLineView = ToneView.extend({
 		grad.addColorStop(0, colors[0]);
 		grad.addColorStop(1, colors[1]);
 
- 		var start = [c.width/2+c.width/l*(0-n/2), c.height - a*c.height];
- 		var stop = [c.width/2+c.width/l*(n-n/2),c.height - (a+b*n)*c.height]
+ 		var start = [c.width/2+c.width/l*(0-n/2), c.height/2 + k*(n/2)*c.height];
+ 		var stop = [c.width/2+c.width/l*(n-n/2), c.height/2 - k*(n/2)*c.height]
 
 		ctx.lineWidth = this.lineWidth;
 		ctx.strokeStyle = grad;

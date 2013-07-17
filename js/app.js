@@ -23,7 +23,6 @@ app.AppView = Backbone.View.extend({
 		$('button').button();
 
 		app.toneModel = new app.ToneModel();
-		app.toneModel.setOutputUnit('bark');
 
 		var toneLineContext = this.$toneWindow[0].getContext('2d');
 
@@ -45,7 +44,6 @@ app.AppView = Backbone.View.extend({
 	},
 	// Re-rendering the App when the model's state changes
 	render: function () {
-		console.log(app.toneModel.get('playing'));
 		if (app.toneModel.get('processing')) {
 			$(this.el).hide();
 			$('#processingImage').show();

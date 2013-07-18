@@ -17,8 +17,8 @@ app.ToneModel = Backbone.Model.extend({
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1000,
     iterations: 7, // downsampling factor for HPS algorithm
-    fmin: 100, 
-    fmax: 3000,
+    fmin: 300, 
+    fmax: 3400,
     aMax: 0.1,
     soundfileSource: 'audio/ma_short.wav',
     microphoneInput: null,
@@ -115,12 +115,12 @@ app.ToneModel = Backbone.Model.extend({
     // FOR MATLAB EXPORT
     // ---------------------------
     var output;
-    output += "[";
-    for (var i = 1; i < this._testData.length; i++) {
+    output = "spec = [";
+    for (var i = 0; i < this._testData.length; i++) {
       for (var j = 0; j < this._testData[i].length; j++) {
-        output += ' ' + this._testData[i][j];
+        output +=  this._testData[i][j] + ' ';
       };
-      output += ";";
+      if (i != this._testData.length-1) { output += ";"; }
     };
     output += "]";
     output = [output];
@@ -188,21 +188,11 @@ app.ToneModel = Backbone.Model.extend({
     analyser.getByteFrequencyData(data);
 
     if (this.get('playing')) {
-      // function arrayBufferToString(buf, callback) {
-      //   var bb = new Blob([new Uint8Array(buf)]);
-      //   var f = new FileReader();
-      //   f.onload = function(e) {
-      //     callback(e.target.result);
-      //   };
-      //   f.readAsText(bb);
-      // }
-      this._testData[this._count] = data;
-      // function showContent (content) {
-         // console.log(JSON.stringify(data));
-      // }
-      this._count++;
-      // arrayBufferToString(data, showContent);
-      
+      // if (this._count < 10) {
+
+        this._testData[this._count] = Array.apply( [], data );
+        this._count++;
+      // } 
     }
 
     var n = data.length;

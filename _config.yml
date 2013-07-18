@@ -81,7 +81,7 @@ JB :
   comments :
     provider : disqus
     disqus :
-      short_name : toney
+      short_name : toneydevelopment
     livefyre :
       site_id : 123
     intensedebate :

@@ -39,6 +39,8 @@ app.ToneModel = Backbone.Model.extend({
     if (!window.AudioContext || !navigator.getUserMedia) {
       alert('THIS APPlICATION REQUIRES "Web Audio Input" ENABLED IN chrome://flags.');
     }
+    this._testData = [];
+    this._count = 0;
 
     audioContext = new AudioContext();
 
@@ -65,7 +67,7 @@ app.ToneModel = Backbone.Model.extend({
     // private temporary state variables 
     this._peaks = [];
     this._data = new Uint8Array(analyser.frequencyBinCount);
-
+    console.log(analyser.frequencyBinCount);
     // @TODO remove this ugly fix:
     // Needs to wait for a little bit before the audio is ready to connect with
     createSoundFileNode = function () { 
@@ -109,6 +111,28 @@ app.ToneModel = Backbone.Model.extend({
     this.get('audio').currentTime = 0;
     console.log('audio finished playing');
     this.playToggle();
+
+    // FOR MATLAB EXPORT
+    // ---------------------------
+    var output;
+    output += "[";
+    for (var i = 1; i < this._testData.length; i++) {
+      for (var j = 0; j < this._testData[i].length; j++) {
+        output += ' ' + this._testData[i][j];
+      };
+      output += ";";
+    };
+    output += "]";
+    output = [output];
+    window.URL = window.webkitURL || window.URL;
+    var file = new Blob(output, { "type" : "text\/plain" });
+    var a = document.getElementById("downloadFile");
+    a.hidden = '';
+    a.href = window.URL.createObjectURL(file);
+    a.download = 'spectogram' + this.get('resolution') + this.get('fmin') + this.get('fmax') +'.m';
+    a.textContent = 'Download spectogram of audiofile as an m-file!';
+    console.log(output);
+    // ---------------------------------
   },
   changeState: function(state) {
     var inputState = this.get('inputState');
@@ -162,6 +186,24 @@ app.ToneModel = Backbone.Model.extend({
     var data = this._data; 
 
     analyser.getByteFrequencyData(data);
+
+    if (this.get('playing')) {
+      // function arrayBufferToString(buf, callback) {
+      //   var bb = new Blob([new Uint8Array(buf)]);
+      //   var f = new FileReader();
+      //   f.onload = function(e) {
+      //     callback(e.target.result);
+      //   };
+      //   f.readAsText(bb);
+      // }
+      this._testData[this._count] = data;
+      // function showContent (content) {
+         // console.log(JSON.stringify(data));
+      // }
+      this._count++;
+      // arrayBufferToString(data, showContent);
+      
+    }
 
     var n = data.length;
     var m = Math.floor(n/iterations);

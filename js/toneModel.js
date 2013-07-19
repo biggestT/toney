@@ -15,7 +15,7 @@ app.ToneModel = Backbone.Model.extend({
     length: 100,
     outLimits: [Number.MAX_VALUE, Number.MIN_VALUE],
     //  Parameters for clipping of uninteresting audio data
-    varThreshold: 1000,
+    varThreshold: 1400,
     iterations: 7, // downsampling factor for HPS algorithm
     fmin: 300, 
     fmax: 3400,
@@ -121,19 +121,19 @@ app.ToneModel = Backbone.Model.extend({
       var data = source.getTestData();
       output = name + " = [";
       for (var i = 0; i < data.length; i++) {
-        for (var j = 0; j < data.length; j++) {
+        for (var j = 0; j < data[i].length; j++) {
           output +=  data[i][j] + ' ';
         };
         if (i != data.length-1) { output += ";"; }
       };
-      output += "]";
+      output += "];";
       output = [output];
       window.URL = window.webkitURL || window.URL;
       var file = new Blob(output, { "type" : "text\/plain" });
       var a = document.getElementById("downloadFile");
       a.hidden = '';
       a.href = window.URL.createObjectURL(file);
-      a.download = 'spectogram' + name + this.get('resolution') + this.get('fmin') + this.get('fmax') +'.m';
+      a.download = name + this.get('resolution') + this.get('fmin') + this.get('fmax') +'.m';
       a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
       console.log("data saved");
 

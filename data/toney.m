@@ -38,8 +38,8 @@ function [tonelines spectrum] = toney(sGram, threshold)
     tonelines = peaks./m.*(fmax - fmin) + fmin;
     
     figure;
-    plot(1:n,tonelines, '--.');
-    axis([0 n fmin 1500]);
+    plot(1:n,tonelines, '--.r');
+    axis([0 n fmin 2000]);
 %     HeatMap(sGram');
    
  

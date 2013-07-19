@@ -39,8 +39,6 @@ app.ToneModel = Backbone.Model.extend({
     if (!window.AudioContext || !navigator.getUserMedia) {
       alert('THIS APPlICATION REQUIRES "Web Audio Input" ENABLED IN chrome://flags.');
     }
-    this._testData = [];
-    this._count = 0;
 
     audioContext = new AudioContext();
 
@@ -86,6 +84,7 @@ app.ToneModel = Backbone.Model.extend({
 
     // redo soundfile set up if the soundfile source changes 
     this.on('change:soundfileSource', this.setupNewSoundfile());
+    // this.on('change:inputState', );
    
     // Toggle play pause when soundfile is finished playing
     $(this.get('audio')).bind('ended', this.audioEnded.bind(this));
@@ -111,29 +110,38 @@ app.ToneModel = Backbone.Model.extend({
     this.get('audio').currentTime = 0;
     console.log('audio finished playing');
     this.playToggle();
-
-    // FOR MATLAB EXPORT
-    // ---------------------------
-    var output;
-    output = "spec = [";
-    for (var i = 0; i < this._testData.length; i++) {
-      for (var j = 0; j < this._testData[i].length; j++) {
-        output +=  this._testData[i][j] + ' ';
-      };
-      if (i != this._testData.length-1) { output += ";"; }
-    };
-    output += "]";
-    output = [output];
-    window.URL = window.webkitURL || window.URL;
-    var file = new Blob(output, { "type" : "text\/plain" });
-    var a = document.getElementById("downloadFile");
-    a.hidden = '';
-    a.href = window.URL.createObjectURL(file);
-    a.download = 'spectogram' + this.get('resolution') + this.get('fmin') + this.get('fmax') +'.m';
-    a.textContent = 'Download spectogram of audiofile as an m-file!';
-    console.log(output);
-    // ---------------------------------
   },
+  // FOR MATLAB/OCTAVE EXPORT
+  // ---------------------------
+  exportTestData: function (source) {
+    var name = source.get('name');
+    console.log("starting save data function with: " + name);
+    if (name != "processing") {
+      var output;
+      var data = source.getTestData();
+      output = name + " = [";
+      for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < data.length; j++) {
+          output +=  data[i][j] + ' ';
+        };
+        if (i != data.length-1) { output += ";"; }
+      };
+      output += "]";
+      output = [output];
+      window.URL = window.webkitURL || window.URL;
+      var file = new Blob(output, { "type" : "text\/plain" });
+      var a = document.getElementById("downloadFile");
+      a.hidden = '';
+      a.href = window.URL.createObjectURL(file);
+      a.download = 'spectogram' + name + this.get('resolution') + this.get('fmin') + this.get('fmax') +'.m';
+      a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
+      console.log("data saved");
+
+      source.clearTestData();
+    }
+  },
+  // STATE PATTERN IMPLEMENTATION
+  // -----------------------------
   changeState: function(state) {
     var inputState = this.get('inputState');
     // Make sure the current state wasn't passed in
@@ -142,6 +150,8 @@ app.ToneModel = Backbone.Model.extend({
       // calling exit() on it
       if (inputState) {
         inputState.exit();
+        // Export stored testdata before changing state
+        this.exportTestData(this.get('inputState'));
       }
       this.trigger('stateChanged');
       this.set({ inputState: state });
@@ -157,7 +167,6 @@ app.ToneModel = Backbone.Model.extend({
     }
     else {
       this.changeState(this.get('inputStates')['soundfile']);
-      console.log('soundfile state');
     }
   },
   setupAudioGraph: function() {
@@ -187,13 +196,7 @@ app.ToneModel = Backbone.Model.extend({
 
     analyser.getByteFrequencyData(data);
 
-    if (this.get('playing')) {
-      // if (this._count < 10) {
-
-        this._testData[this._count] = Array.apply( [], data );
-        this._count++;
-      // } 
-    }
+    this.get('inputState').storeTestData(data);
 
     var n = data.length;
     var m = Math.floor(n/iterations);

@@ -13,11 +13,11 @@ app.ToneModel = Backbone.Model.extend({
     smoothing: 0.0,
     resolution: 2048,
     length: 100,
-    outLimits: [Number.MAX_VALUE, Number.MIN_VALUE],
     //  Parameters for clipping of uninteresting audio data
     varThreshold: 1400,
     iterations: 7, // downsampling factor for HPS algorithm
     fmin: 300, 
+    output: 'testData',
     fmax: 3400,
     aMax: 0.1,
     soundfileSource: 'audio/ma_short.wav',
@@ -95,10 +95,15 @@ app.ToneModel = Backbone.Model.extend({
     this.changeState(this.get('inputStates')['microphone']);
   },
   setupNewSoundfile: function() {
-    console.log("audiofilesource changed");
+    console.log('audiofilesource changed');
   },
   startSoundAnalysis: function() {
-    this.animationID = window.requestAnimationFrame(this.update.bind(this));
+    if (this.get('output') == 'testData') {
+      this.animationID = window.requestAnimationFrame(this.testUpdate.bind(this));
+    } 
+    else {
+      this.animationID = window.requestAnimationFrame(this.update.bind(this));
+    }
   },
   stopSoundAnalysis: function() {
     if ( this.animationID ) {
@@ -115,27 +120,30 @@ app.ToneModel = Backbone.Model.extend({
   // ---------------------------
   exportTestData: function (source) {
     var name = source.get('name');
-    console.log("starting save data function with: " + name);
-    if (name != "processing") {
-      var output;
+    console.log('starting save data function with: '+ name);
+    if (name != 'processing') {
       var data = source.getTestData();
-      output = name + " = [";
+      var testTime = source.getTestTime();
+      var output = 'tTest = ' + testTime + ';'; // String to store all data
+      output += 'res = ' + this.get('resolution') + ';';
+      output += 'fLimits = [' + this.get('fmin') + ' ' + this.get('fmax') + ' ];';
+      output += name + ' = [';
       for (var i = 0; i < data.length; i++) {
         for (var j = 0; j < data[i].length; j++) {
           output +=  data[i][j] + ' ';
         };
-        if (i != data.length-1) { output += ";"; }
+        if (i != data.length-1) { output += ';'; }
       };
-      output += "];";
+      output += '];';
       output = [output];
       window.URL = window.webkitURL || window.URL;
-      var file = new Blob(output, { "type" : "text\/plain" });
-      var a = document.getElementById("downloadFile");
+      var file = new Blob(output, { 'type' : 'text\/plain' });
+      var a = document.getElementById('downloadFile');
       a.hidden = '';
       a.href = window.URL.createObjectURL(file);
       a.download = name + this.get('resolution') + this.get('fmin') + this.get('fmax') +'.m';
       a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
-      console.log("data saved");
+      console.log('data saved');
 
       source.clearTestData();
     }
@@ -186,7 +194,7 @@ app.ToneModel = Backbone.Model.extend({
 
     lpF.frequency.value = this.get('fmax'); // Set cutoff 
     hpF.frequency.value = this.get('fmin'); // Set cutoff 
-    console.log("audio analysis graph set up!");
+    console.log('audio analysis graph set up!');
     return(analysisInputNode);
   },
   // Implementation of the HPS algorithm plus simple noise/silence detection
@@ -195,8 +203,6 @@ app.ToneModel = Backbone.Model.extend({
     var data = this._data; 
 
     analyser.getByteFrequencyData(data);
-
-    this.get('inputState').storeTestData(data);
 
     var n = data.length;
     var m = Math.floor(n/iterations);
@@ -277,6 +283,12 @@ app.ToneModel = Backbone.Model.extend({
     var corrCoeff = (varXY*varXY)/(varX*varY); // not used ATM
 
     return [k, n]; //  k value and the length of the straight line
+  },
+  testUpdate: function () {
+    var data = this._data; 
+    analyser.getByteFrequencyData(data);
+    this.get('inputState').storeTestData(data);
+    this.animationID = window.requestAnimationFrame(this.testUpdate.bind(this));
   },
   update: function () {
 

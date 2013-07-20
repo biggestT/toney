@@ -19,6 +19,9 @@ SourceState = Backbone.Model.extend({
     // this._lineBounds = [unit.min, unit.max];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
   },
   storeTestData: function (data) {
+    if (this._testData.length == 0) {
+      this._testStart = new Date().getTime();
+    }
     this._testData[this._testCount] = Array.apply( [], data );
     this._testCount++;  
   },
@@ -28,6 +31,10 @@ SourceState = Backbone.Model.extend({
   },
   getTestData: function () {
     return this._testData;  
+  },
+  getTestTime: function () {
+    var time = new Date().getTime() - this._testStart;
+    return time;
   },
   addTone: function (t) {
     this._tones.push(t);

@@ -35,9 +35,9 @@ var soundfileSource = BaseState.extend({
   	this.owner.changeState( this.owner.sourceStates.microphone );
   }
  });
-// Baseclass for all Toney viewers
-//
-var ToneView = Backbone.View.extend({
+// Concrete Viewer that outputs the toneline which is characteristic to Toney
+
+app.ToneLineView = Backbone.View.extend({
 	
 	tagName: 'canvas',
 	lineWidth: 15,
@@ -48,13 +48,8 @@ var ToneView = Backbone.View.extend({
 	colors: {
 		redGradient: ['#BB0805', '#FF4D2E'],
 		greenGradient: ['#0BB400', '#2EFE3E']
-	}
-});
+	},
 
-// Concrete Viewer that outputs the toneline which is characteristic to Toney
-
-app.ToneLineView = ToneView.extend({
-	
 	initialize: function() {
 				
 		this.sourceStates = {};
@@ -78,7 +73,7 @@ app.ToneLineView = ToneView.extend({
 			this.sourceStates.microphone.draw();
 		} 
 	},
-  drawGradientLine: function(line) {
+  	drawGradientLine: function(line) {
 		var ctx = this.ctx;
 		var c = ctx.canvas;
 		var l = this.length;
@@ -115,7 +110,7 @@ app.ToneLineView = ToneView.extend({
 		console.log("min: " + this.min + "max: " + this.max);
 	},
 	changeState: function( state ) {
-    this.sourceState = state;
+    	this.sourceState = state;
 	},
 	update: function (line) {
 		this.sourceState.updateLine(line);

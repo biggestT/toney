@@ -10,31 +10,7 @@ SourceState = Backbone.Model.extend({
   },
   initialize: function(owner) {
     this._owner = owner; // not sure how to call superConstructor
-    this._tones = [];
-    this.ampl = 0.1;
-    this._testData = [];
-    this._testCount = 0;
-    // each sourcestate has its own dynamic range where its toneline is plotted
-    // var unit = owner.get(outputUnit);
-    // this._lineBounds = [unit.min, unit.max];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
-  },
-  storeTestData: function (data) {
-    if (this._testData.length == 0) {
-      this._testStart = new Date().getTime();
-    }
-    this._testData[this._testCount] = Array.apply( [], data );
-    this._testCount++;  
-  },
-  clearTestData: function () {
-    this._testData = [];
-    this._testCount = 0;   
-  },
-  getTestData: function () {
-    return this._testData;  
-  },
-  getTestTime: function () {
-    var time = new Date().getTime() - this._testStart;
-    return time;
+    this._tones = [];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
   },
   addTone: function (t) {
     this._tones.push(t);
@@ -72,19 +48,6 @@ soundfileState = SourceState.extend({
     this._owner.startSoundAnalysis();
     var a = this._owner.get('audio');
     a.play();
-    // console.log( a); // Trying to detect playback bug
-    // console.log(a.data('events'));
-    // playAudio = function (e) {
-    //   this._owner.get('audio').play();
-    //   console.log('audio can now be played');
-    // }
-    // a.bind('canplay', function () {
-    //   console.log('audio canplay fired');
-    // });
-    // a.oncanplay = playAudio;  
-    // a.addEventListener("canplay" , function () {
-    // });
-    console.log( a); // Trying to detect playback bug
   },
   start: function() {
   },

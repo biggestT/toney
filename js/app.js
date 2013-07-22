@@ -31,12 +31,10 @@ app.AppView = Backbone.View.extend({
 			ctx: toneLineContext
 		});
 
-		// start drawing everyting that needs to be drawn in approx 60 fps
-		// function tick() {
-			// requestAnimationFrame(app.toneModel.update);
-		// 	line.draw();
-		// }
-		// tick();
+		// Only for testing purposes, not used in production
+		var test = new app.TestView({
+			model: app.toneModel
+		});
 		
 		this.listenTo( app.toneModel, 'stateChanged', this.render );
 		

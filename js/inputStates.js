@@ -10,11 +10,7 @@ SourceState = Backbone.Model.extend({
   },
   initialize: function(owner) {
     this._owner = owner; // not sure how to call superConstructor
-    this._tones = [];
-    this.ampl = 0.1;
-    // each sourcestate has its own dynamic range where its toneline is plotted
-    // var unit = owner.get(outputUnit);
-    // this._lineBounds = [unit.min, unit.max];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+    this._tones = [];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
   },
   addTone: function (t) {
     this._tones.push(t);
@@ -27,6 +23,9 @@ SourceState = Backbone.Model.extend({
   }
 });
 microphoneState = SourceState.extend({
+  defaults: {
+    name: "microphone" 
+  },
   execute: function() {
     this._owner.get('microphoneInput').connect(this._owner.get('analysisInputNode'));
     this._owner.startSoundAnalysis();
@@ -40,26 +39,15 @@ microphoneState = SourceState.extend({
   }
 });
 soundfileState = SourceState.extend({
-
+  defaults: {
+    name: "soundfile" 
+  },
   execute: function() {
     this._owner.get('soundFileInput').connect(this._owner.get('analysisInputNode'));
     this._owner.get('soundFileInput').connect(audioContext.destination);
     this._owner.startSoundAnalysis();
     var a = this._owner.get('audio');
     a.play();
-    // console.log( a); // Trying to detect playback bug
-    // console.log(a.data('events'));
-    // playAudio = function (e) {
-    //   this._owner.get('audio').play();
-    //   console.log('audio can now be played');
-    // }
-    // a.bind('canplay', function () {
-    //   console.log('audio canplay fired');
-    // });
-    // a.oncanplay = playAudio;  
-    // a.addEventListener("canplay" , function () {
-    // });
-    console.log( a); // Trying to detect playback bug
   },
   start: function() {
   },
@@ -69,6 +57,9 @@ soundfileState = SourceState.extend({
   }
 });
 processingState = BaseState.extend({
+  defaults: {
+    name: "processing" 
+  },
   execute: function() {
     this._owner.set({ 'processing': true });
     console.log('processing ...');

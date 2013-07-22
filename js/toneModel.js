@@ -9,16 +9,19 @@ var audioContext = null,
     microphoneInput = null;
 
 app.ToneModel = Backbone.Model.extend({
+
+  // DEFAULT PARAMETERS
+  // ------------------
+
   defaults: {
     smoothing: 0.0,
     resolution: 2048,
     length: 100,
-    outLimits: [Number.MAX_VALUE, Number.MIN_VALUE],
     //  Parameters for clipping of uninteresting audio data
-    varThreshold: 1000,
+    varThreshold: 1400,
     iterations: 7, // downsampling factor for HPS algorithm
-    fmin: 100, 
-    fmax: 3000,
+    fmin: 300, 
+    fmax: 3400,
     aMax: 0.1,
     soundfileSource: 'audio/ma_short.wav',
     microphoneInput: null,
@@ -29,6 +32,10 @@ app.ToneModel = Backbone.Model.extend({
     playing: false,
     processing: false
   },
+
+  // INITIALIZE THE WHOLE AUDIO SETUP FOR TONELINE CALCULATIONS
+  // ------------------------------- 
+
   initialize: function() {
     // cross-browser retrieval of neccessary Web Audio API context providers and the ability to get users microphone input
     var vendors = ['', 'ms', 'moz', 'webkit', 'o'];
@@ -63,7 +70,6 @@ app.ToneModel = Backbone.Model.extend({
     this.get('audio').autoplay = false;
 
     // private temporary state variables 
-    this._peaks = [];
     this._data = new Uint8Array(analyser.frequencyBinCount);
 
     // @TODO remove this ugly fix:
@@ -79,23 +85,36 @@ app.ToneModel = Backbone.Model.extend({
     // connect microphone
     navigator.getUserMedia( {audio:true}, this.initializeMicrophone.bind(this) , function(err) {console.log(err)} );
 
-
     // EVENT BINDING
 
     // redo soundfile set up if the soundfile source changes 
     this.on('change:soundfileSource', this.setupNewSoundfile());
+    // this.on('change:inputState', );
    
     // Toggle play pause when soundfile is finished playing
     $(this.get('audio')).bind('ended', this.audioEnded.bind(this));
   },
+
+  // SET UP THE MICROPHONE CONNECTION ONCE
+  // ------------------------------------
+
   initializeMicrophone: function (stream) {
     this.set({microphoneInput: audioContext.createMediaStreamSource( stream ) });
     // Set to microphone input state
     this.changeState(this.get('inputStates')['microphone']);
   },
+
+  // CHANGE AUDIOFILE
+  // ----------------
+
   setupNewSoundfile: function() {
-    console.log("audiofilesource changed");
+    console.log('audiofilesource changed');
   },
+
+
+  // START AND STOP AUDIO ANALYSIS
+  // ------------------------------
+
   startSoundAnalysis: function() {
     this.animationID = window.requestAnimationFrame(this.update.bind(this));
   },
@@ -105,11 +124,19 @@ app.ToneModel = Backbone.Model.extend({
     }
     this.animationID = 0;
   },
+
+  // RUNS WHEN AUDIO HAS ENDED
+  // -------------------------
+
   audioEnded: function () {
     this.get('audio').currentTime = 0;
     console.log('audio finished playing');
     this.playToggle();
   },
+
+  // STATE PATTERN IMPLEMENTATION
+  // -----------------------------
+
   changeState: function(state) {
     var inputState = this.get('inputState');
     // Make sure the current state wasn't passed in
@@ -125,6 +152,10 @@ app.ToneModel = Backbone.Model.extend({
       console.log('state changed');
     }
   },
+
+  // CHANGE BETWEEN SOUNDFILE AND MICROPHONE INPUT
+  // ----------------------------------------------
+
   playToggle: function() {
     var wasPlaying = this.get('playing');
     this.set({ playing: !wasPlaying });
@@ -133,9 +164,12 @@ app.ToneModel = Backbone.Model.extend({
     }
     else {
       this.changeState(this.get('inputStates')['soundfile']);
-      console.log('soundfile state');
     }
   },
+
+  // SETUP THE NODE STRUCTURE IN THE WEB AUDIO GRAPH
+  // ---------------------------------------------
+
   setupAudioGraph: function() {
     // Create the filters for speech clipping
     var analysisInputNode = audioContext.createGainNode(); 
@@ -153,27 +187,34 @@ app.ToneModel = Backbone.Model.extend({
 
     lpF.frequency.value = this.get('fmax'); // Set cutoff 
     hpF.frequency.value = this.get('fmin'); // Set cutoff 
-    console.log("audio analysis graph set up!");
+    console.log('audio analysis graph set up!');
     return(analysisInputNode);
   },
-  // Implementation of the HPS algorithm plus simple noise/silence detection
-  getPitchHPS: function () {
+
+  // RETRIEVE SPECTROGRAM FROM THE FFT PERFORMED BY THE ANALYSER NODE
+  // ---------------------------------------------------------------
+  
+  updateSpectrogram: function () {
+    analyser.getByteFrequencyData(this._data);
+    this.trigger('spectrogramChange', this._data);
+  },
+
+  // HPS ALGORITHM FOR PITCH DETECTION
+  // ------------------
+
+  getPitchHPS: function (data) {
     var iterations = this.get('iterations');
-    var data = this._data; 
-
-    analyser.getByteFrequencyData(data);
-
     var n = data.length;
     var m = Math.floor(n/iterations);
     var spectrum = new Array(m);
     // Psychoacoustic compensation to increase the importance of higher frequencies with an arbitrary constant
     for (var j = 0; j < m; j++) {
-      spectrum[j] = 1 + j*30;
+      spectrum[j] = 1 + j;
     }
     // Create the harmonic product spectrum with an arbitrary constant
     for (var i = 1; i < iterations; i++) {
       for (var j = 0; j < m; j++) {
-        spectrum[j] *= data[j*i] / 50;
+        spectrum[j] *= data[j*i];
       }
     }
 
@@ -197,7 +238,7 @@ app.ToneModel = Backbone.Model.extend({
       s2 += data[i] * data[i];
     }
     var variance = (s2 - (s*s) / n) / n;
-    // have to pass threshold variance to nto be noise
+    // have to pass threshold variance to not be noise
     if ( variance > this.get('varThreshold') ) {
         var toneInHertz = ( max ) / ( m ) * (this.get('fmax') - this.get('fmin') ) + this.get('fmin');
         return toneInHertz;
@@ -206,8 +247,11 @@ app.ToneModel = Backbone.Model.extend({
     }
 
   },
-  // Simple Linear Regression Analysis
+
+  // SIMPLE LINEAR REGRESSION
   // see http://mathworld.wolfram.com/LeastSquaresFitting.html
+  // -----------------------------------------------------------
+
   getLinearApproximation: function(tones) {
     var n = tones.length;     
     var sumXY = 0;
@@ -243,10 +287,14 @@ app.ToneModel = Backbone.Model.extend({
 
     return [k, n]; //  k value and the length of the straight line
   },
-  update: function () {
 
+  // UPDATE METHOND THAT RUNS APPROX 60 TIMES PER SECOND
+  // ----------------------------------------------------
+
+  update: function () {
+    this.updateSpectrogram();
     var input = this.get('inputState');
-    var currPitch = this.getPitchHPS();
+    var currPitch = this.getPitchHPS(this._data);
     var min = this.get('fmin');
     var max = this.get('fmax');
     var aM = this.get('aMax'); // maximum amplitude of any one of the lines so far is used for dynamic plot range

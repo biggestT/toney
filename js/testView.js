@@ -60,7 +60,7 @@ var testState = Backbone.Model.extend({
   exportTestData: function () {
     var source = this.sourceState;
     var name = source.get('name');
-    var fLimits = this.model.get('fLimits');
+    var fLimits = this.model.get('bandpass');
     if (name != 'processing') {
       var data = source.getTestData();
       var testTime = source.getTestTime();

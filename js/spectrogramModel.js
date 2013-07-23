@@ -14,9 +14,10 @@ var app = app || {};
 			fftSize: 2048,
 			smoothing: 0.0,
 			resolution: 2048,
-			fLimits: {
-				fMin: 300,
-				fMax: 3400
+			bandpass: {
+				fMin: 280,
+				fMax: 3000,
+				qFactor: 0.0
 			},
 			soundfileSource: 'audio/ma_short.wav',
 			currState: null,
@@ -89,13 +90,8 @@ var app = app || {};
 	  initializeSoundfile: function (soundfile) {
 	    this._audio = new Audio(soundfile);
 	    this._audio.autoplay = false;
-
-		  // @TODO remove this ugly fix:
-	    // Needs to wait for a little bit before the audio is ready to connect with
-	    var createSoundFileNode = function () { 
-	      this._soundFileInput = audioContext.createMediaElementSource(this._audio) 
-	    };
-	    window.setTimeout(createSoundFileNode.bind(this), 200, true);
+	    this._audio.preload = true;
+	    this._soundFileInput = audioContext.createMediaElementSource(this._audio);
 	  },
 	  connectSoundfile: function () {
 	  	this._soundFileInput.connect(this._analysisInputNode);
@@ -111,23 +107,12 @@ var app = app || {};
 	  setupNewSoundfile: function() {
 	    console.log('audiofilesource changed');
 	  },
-	  soundfileEnded: function () {
-	    this._audio.currentTime = 0;
-	    console.log('audio finished playing');
+  	soundfileEnded: function () {
+  		// reload audio, this._audio.currentTime not working, 
+  		// might be because of currently immature Web Audio API for .wav files
+	    this._audio.src = this._audio.src; 
 	    this.inputToggle();
   	},
-
-  	// SWAP BETWEEN SOUNDFILE / MICROPHONE
-	  // ----------------------------------------------
-
-	  inputToggle: function() {
-	    if ( this.get('playing') ) {
-	      this.changeState(this._states['microphone']);
-	    }
-	    else {
-	      this.changeState(this._states['soundfile']);
-	    }
-	  },
 
 	  // ANALYSER METHODS
 	  // --------------------------------------
@@ -151,8 +136,8 @@ var app = app || {};
 		updateSpectrogram: function () {
 	    this._analyser.getByteFrequencyData(this._data);
 	    this.trigger('spectrogramChange', this._data);
-	    console.log(this._data);
 	    this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
+
   	},
 
 	  // INITIALIZE THE NODE STRUCTURE IN THE WEB AUDIO GRAPH
@@ -161,11 +146,14 @@ var app = app || {};
 	  initializeAudioGraph: function() {
 
 	  	var analysisInputNode, lpF, hpF, bufferFiller, fftSize, bufferFillSize
-	  	, fmin, fmax;
+	  	, fmin, fmax, q, bp;
 
-	  	fmin = this.get('fLimits')['fMin'];
-	  	fmin = this.get('fLimits')['fMax'];
 	  	fftSize = this.get('fftSize');
+	  	bp = this.get('bandpass');
+	  	fmin = bp['fMin'];
+	  	fmin = bp['fMax'];
+	  	q = bp['qFactor'];
+
 
 	  	// BUFFER INITIALIZATION 
 	  	// @TODO Shifting window buffer
@@ -187,7 +175,7 @@ var app = app || {};
 		  // 	}
 		  // };
 
-		  // bufferFiller = audioContext.createJavaScriptNode(bufferFillSize, 1, 1);
+		  // bufferFiller = audioContext.createScriptProcessor(bufferFillSize, 1, 1);
 		  // bufferFiller.onaudioprocess = fillBuffer(e).bind(this);
 
 		    
@@ -200,22 +188,33 @@ var app = app || {};
 	    lpF = audioContext.createBiquadFilter();
 	    lpF.type = lpF.LOWPASS; 
 	    lpF.frequency.value = fmax;
-	    lpF.Q = 0.1;
+	    lpF.Q = q;
 
 	    // High-pass filter. 
 	    hpF = audioContext.createBiquadFilter();
 	    hpF.type = hpF.HIGHPASS; 
 	    hpF.frequency.value = fmin;
-	    hpF.Q = 0.1;
+	    hpF.Q = q;
 
 	    // Connect all of the nodes
 	    analysisInputNode.connect(lpF);
 	    lpF.connect(hpF);
 	    hpF.connect(this._analyser);
-	    // this._analyser.connect(audioContext.destination);
 
 	    console.log('audio analysis graph set up!');
 	    return(analysisInputNode);
+	  },
+
+	  // SWAP BETWEEN SOUNDFILE / MICROPHONE
+	  // ----------------------------------------------
+
+	  inputToggle: function() {
+	    if ( this.get('playing') ) {
+	      this.changeState(this._states['microphone']);
+	    }
+	    else {
+	      this.changeState(this._states['soundfile']);
+	    }
 	  },
 
 	  // STATE PATTERN UTILITY
@@ -230,7 +229,6 @@ var app = app || {};
 	      if (inputState) {
 	        inputState.exit();
 	      }
-	      console.log('changing state');
 	      this.set({ currState: state });
 	      this.get('currState').execute();
 	      this.trigger('stateChanged');

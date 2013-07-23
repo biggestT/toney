@@ -10,14 +10,21 @@ var testState = Backbone.Model.extend({
     this.owner = owner;
     this.set({name: name});
     this._testData = [];
-    this._testCount = 0;   
+    this._testCount = 0;
+    this._maxCount = 500;   
   },
   storeTestData: function (data) {
-    if (this._testData.length == 0) {
-      this._testStart = new Date().getTime();
+    if (this._testCount < this._maxCount) {
+      if (this._testData.length == 0) {
+        this._testStart = new Date().getTime();
+      }
+      this._testData[this._testCount] = Array.apply( [], data );
+      this._testCount++;  
     }
-    this._testData[this._testCount] = Array.apply( [], data );
-    this._testCount++;  
+    else {
+      this.owner.exportTestData();
+    }
+    
   },
   clearTestData: function () {
     this._testData = [];
@@ -53,13 +60,13 @@ var testState = Backbone.Model.extend({
   exportTestData: function () {
     var source = this.sourceState;
     var name = source.get('name');
-    console.log('starting save data function with: '+ name);
+    var fLimits = this.model.get('fLimits');
     if (name != 'processing') {
       var data = source.getTestData();
       var testTime = source.getTestTime();
       var output = 'tTest = ' + testTime + ';'; // String to store all data
       output += 'res = ' + this.model.get('resolution') + ';';
-      output += 'fLimits = [' + this.model.get('fmin') + ' ' + this.model.get('fmax') + ' ];';
+      output += 'fLimits = [' + fLimits['fMin'] + ' ' + fLimits['fMax'] + ' ];';
       output += name + ' = [';
       for (var i = 0; i < data.length; i++) {
         for (var j = 0; j < data[i].length; j++) {
@@ -74,7 +81,7 @@ var testState = Backbone.Model.extend({
       var a = document.getElementById('downloadFile');
       a.hidden = '';
       a.href = window.URL.createObjectURL(file);
-      a.download = name + this.model.get('resolution') + this.model.get('fmin') + this.model.get('fmax') +'.m';
+      a.download = name + this.model.get('resolution') + fLimits['fMin'] + fLimits['fMax'] +'.m';
       a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
 
       source.clearTestData();

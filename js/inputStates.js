@@ -1,73 +1,45 @@
-// Variables and functions that are shared among the ToneModel instances
 BaseState = Backbone.Model.extend({
-  initialize: function(owner) {
-    this._owner = owner;
+  initialize: function(analyser) {
+    this._analyser = analyser;
   }
-});
-SourceState = Backbone.Model.extend({
-  defaults: {
-    ampl: 0.0
-  },
-  initialize: function(owner) {
-    this._owner = owner; // not sure how to call superConstructor
-    this._tones = [];                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
-  },
-  addTone: function (t) {
-    this._tones.push(t);
-  },
-  clearTones: function () {
-    this._tones = [];
-  },
-  getTones: function () {
-    return this._tones;
-  }
-});
-microphoneState = SourceState.extend({
+})
+
+MicrophoneState = BaseState.extend({
   defaults: {
     name: "microphone" 
   },
   execute: function() {
-    this._owner.get('microphoneInput').connect(this._owner.get('analysisInputNode'));
-    this._owner.startSoundAnalysis();
-    this._owner.get('audio').pause();
-  },
-  start: function() {
+    this._analyser.connectMicrophone();
+    this._analyser.startSoundAnalysis();
   },
   exit: function() {
-    this._owner.get('microphoneInput').disconnect();
-    this._owner.stopSoundAnalysis();
+    this._analyser.disconnectMicrophone();
+    this._analyser.stopSoundAnalysis();
   }
 });
-soundfileState = SourceState.extend({
+SoundfileState = BaseState.extend({
   defaults: {
     name: "soundfile" 
   },
   execute: function() {
-    this._owner.get('soundFileInput').connect(this._owner.get('analysisInputNode'));
-    this._owner.get('soundFileInput').connect(audioContext.destination);
-    this._owner.startSoundAnalysis();
-    var a = this._owner.get('audio');
-    a.play();
-  },
-  start: function() {
+    this._analyser.connectSoundfile();
+    this._analyser.startSoundAnalysis();
   },
   exit: function() {
-    this._owner.get('soundFileInput').disconnect();
-    this._owner.stopSoundAnalysis();
+    this._analyser.disconnectSoundfile();
+    this._analyser.stopSoundAnalysis();
   }
 });
-processingState = BaseState.extend({
+ProcessingState = BaseState.extend({
   defaults: {
     name: "processing" 
   },
   execute: function() {
-    this._owner.set({ 'processing': true });
+    this._analyser.set({ 'processing': true });
     console.log('processing ...');
   },
   exit: function() {
-    this._owner.set({ 'processing': false });
+    this._analyser.set({ 'processing': false });
     console.log('finished processing');
   }
 });
-
-

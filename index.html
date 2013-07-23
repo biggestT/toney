@@ -28,21 +28,22 @@
 	<!-- Third party js libraries -->
   <script type="text/javascript" src="js/lib/jquery-1.8.3.min.js"></script>
   <script type="text/javascript" src="js/lib/jquery-ui-1.9.2.custom.min.js"></script>
-  <script type="text/javascript" src="js/lib/webgl-utils.js"></script>
   <script type="text/javascript" src="js/lib/underscore.js"></script>
   <script type="text/javascript" src="js/lib/backbone.js"></script>
   <!-- Toney js files -->
+  <script type="text/javascript" src="js/spectrogramModel.js"></script> 
   <script type="text/javascript" src="js/inputStates.js"></script>
-  <script type="text/javascript" src="js/toneModel.js"></script> 
   <script type="text/javascript" src="js/testView.js"></script> <!-- Only when testing -->
   <script type="text/javascript" src="js/toneView.js"></script>
   <script type="text/javascript" src="js/app.js"></script>
 
   <script>
-  // Kick off everyting!
-	$(function() {
-		new app.AppView();
-	});
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.AppView();
+		});
 	</script>
 </body>
 </html>

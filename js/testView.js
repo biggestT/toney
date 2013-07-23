@@ -61,11 +61,13 @@ var testState = Backbone.Model.extend({
     var source = this.sourceState;
     var name = source.get('name');
     var fLimits = this.model.get('bandpass');
+    var resolution = this.model.get('fftSize');
+    
     if (name != 'processing') {
       var data = source.getTestData();
       var testTime = source.getTestTime();
       var output = 'tTest = ' + testTime + ';'; // String to store all data
-      output += 'res = ' + this.model.get('resolution') + ';';
+      output += 'res = ' + resolution + ';';
       output += 'fLimits = [' + fLimits['fMin'] + ' ' + fLimits['fMax'] + ' ];';
       output += name + ' = [';
       for (var i = 0; i < data.length; i++) {
@@ -81,7 +83,7 @@ var testState = Backbone.Model.extend({
       var a = document.getElementById('downloadFile');
       a.hidden = '';
       a.href = window.URL.createObjectURL(file);
-      a.download = name + this.model.get('resolution') + fLimits['fMin'] + fLimits['fMax'] +'.m';
+      a.download = name + resolution + fLimits['fMin'] + fLimits['fMax'] +'.m';
       a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
 
       source.clearTestData();

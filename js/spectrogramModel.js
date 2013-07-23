@@ -12,12 +12,11 @@ var app = app || {};
 
 		defaults: {
 			fftSize: 2048,
-			smoothing: 0.0,
-			resolution: 2048,
+			smoothing: 0.5,
 			bandpass: {
-				fMin: 280,
-				fMax: 3000,
-				qFactor: 0.0
+				fMin: 160,
+				fMax: 3400,
+				qFactor: 0.05
 			},
 			soundfileSource: 'audio/ma_short.wav',
 			currState: null,
@@ -91,7 +90,12 @@ var app = app || {};
 	    this._audio = new Audio(soundfile);
 	    this._audio.autoplay = false;
 	    this._audio.preload = true;
-	    this._soundFileInput = audioContext.createMediaElementSource(this._audio);
+	    // @TODO remove this ugly fix:
+      // Needs to wait for a little bit before the audio is ready to connect with
+      var createSoundFileNode = function () { 
+        this._soundFileInput = audioContext.createMediaElementSource(this._audio) 
+      };
+      window.setTimeout(createSoundFileNode.bind(this), 200, true);
 	  },
 	  connectSoundfile: function () {
 	  	this._soundFileInput.connect(this._analysisInputNode);
@@ -108,8 +112,8 @@ var app = app || {};
 	    console.log('audiofilesource changed');
 	  },
   	soundfileEnded: function () {
-  		// reload audio, this._audio.currentTime not working, 
-  		// might be because of currently immature Web Audio API for .wav files
+  		// reload audio because setting this._audio.currentTime is not working, 
+  		// might be because of currently immature Web Audio API for .wav files?
 	    this._audio.src = this._audio.src; 
 	    this.inputToggle();
   	},
@@ -137,7 +141,6 @@ var app = app || {};
 	    this._analyser.getByteFrequencyData(this._data);
 	    this.trigger('spectrogramChange', this._data);
 	    this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
-
   	},
 
 	  // INITIALIZE THE NODE STRUCTURE IN THE WEB AUDIO GRAPH
@@ -200,6 +203,7 @@ var app = app || {};
 	    analysisInputNode.connect(lpF);
 	    lpF.connect(hpF);
 	    hpF.connect(this._analyser);
+	    
 
 	    console.log('audio analysis graph set up!');
 	    return(analysisInputNode);

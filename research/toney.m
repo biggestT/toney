@@ -4,15 +4,13 @@
 function [tonelines spectrum] = toney(sGram, threshold)
 %     close all;
     iterations = 8;
-    fmin = 300;
-    fmax = 3400;
     n = size(sGram,1);
-    m = floor(n/iterations)
-%     threshold = 1000;
+    N = size(sGram,2);
+    m = floor(N/iterations)
     
     spectrum = ones(n, m);
     for i = 1:m
-        spectrum(i,:) = spectrum(i,:) + i * 30;
+        spectrum(i,:) = spectrum(i,:) + i;
     end
     
     % Simulate javascript loop over n samples
@@ -22,25 +20,23 @@ function [tonelines spectrum] = toney(sGram, threshold)
         squaredSum = sum(sGram(s,:).*sGram(s,:));
         variance = (squaredSum-(normalSum*normalSum)/n)/n;
         % only get HPS for sample if above noise threshold
-        if variance > threshold
+        % if variance >= threshold
             for i = 1:iterations
                 for j = 1:m
-                    spectrum(s,j) = spectrum(s,j) * sGram(s,j*i) / 50;
+                    spectrum(s,j) = spectrum(s,j) * sGram(s,j*i);
                 end
             end
-        else
-            spectrum(s,:) = 0;
-        end
+        % else
+        %     spectrum(s,:) = 0;
+        % end
     end
     
-    [maxvalues, peaks] = max(spectrum,[],2);
-    % convert from index to Hertz
-    tonelines = peaks./m.*(fmax - fmin) + fmin;
+    [maxvalues, tonelines] = max(spectrum,[],2);
     
     figure;
     plot(1:n,tonelines, '--.r');
-    axis([0 n fmin 2000]);
-%     HeatMap(sGram');
+    axis([0 n 0 m/4]);
+    HeatMap(sGram');
    
  
     

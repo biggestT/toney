@@ -105,35 +105,32 @@ var app = app || {};
 	        processing: new ProcessingState(this)
 	    };
 
-	    
+	    // enter processingstate while waiting for microphone and soundfile
 	    this.changeState(this._states['processing']);
 	    
-	    this.initializeMicrophone();
-	    this.initializeSoundfile(this.get('soundfileSource'));
+	    // PREPARE ANALYSER, MICROPHONE AND SOUNDFILE, ONE AT THE TIME 
 	    this.initializeAnalyser();
-	    
-	    this._analysisInputNode = this.initializeAudioGraph();
+	    this.initializeMicrophone();
+	    this.once('microphone:ready', this.initializeSoundfile, this);
+	    this.once('soundfile:loaded', this.createSoundFileNode, this);
+	    this.once('soundfile:ready', this.initializeAudioGraph, this);
+	  	this.once('audiograph:ready', this.inputToggle, this);
 	   
-	    // EVENT BINDINGS
+	    // PERMANENT EVENT BINDINGS
 	    // ---------------------------
-
-	    this.on('microphoneReady', function () { 
-	    	this.changeState(this._states['microphone']);
-	  	}.bind(this)); // Fired once after microphone has been set up
-	    
-	    $(this._audio).bind('ended', this.soundfileEnded.bind(this));
-	    this.on('change:soundfileSource', this.setupNewSoundfile());
+	    this.on('soundfile:ended', this.soundfileEnded, this);
 	  },
 
 	  // MICROPHONE METHODS
 	  // ------------------------------------
 
 	  initializeMicrophone: function () {
-	    var gotMicrophoneStream = function  (stream) {
-	    	this._microphoneInput = audioContext.createMediaStreamSource( stream );
-	    	this.trigger('microphoneReady');
-	    };
-			navigator.getUserMedia( {audio:true}, gotMicrophoneStream.bind(this) , function(err) {console.log(err)} );
+			navigator.getUserMedia( {audio:true}, this.createMicrophoneNode.bind(this) , function(err) {console.log(err)} );
+	  },
+	  createMicrophoneNode: function (stream) {
+	  	this._microphoneInput = audioContext.createMediaStreamSource( stream );
+	  	console.log('mic node created');
+	  	this.trigger('microphone:ready');
 	  },
 	  connectMicrophone: function () {
 	  	this._microphoneInput.connect(this._analysisInputNode);
@@ -145,16 +142,20 @@ var app = app || {};
 	  // SOUNDFILE METHODS
 	  // --------------------------------------
 
-	  initializeSoundfile: function (soundfile) {
-	    this._audio = new Audio(soundfile);
+	  initializeSoundfile: function () {
+	    this._audio = new Audio(this.get('soundfileSource'));
+	    this._audio.preload = false;
+	    this._audio.addEventListener("canplay", function () {
+		  	this.trigger('soundfile:loaded');
+		  }.bind(this));
+		  this._audio.addEventListener("ended", function () {
+		  	this.trigger('soundfile:ended');
+		  }.bind(this));
 	    this._audio.autoplay = false;
-	    this._audio.preload = true;
-	    // @TODO remove this ugly fix:
-      // Needs to wait for a little bit before the audio is ready to connect with
-      var createSoundFileNode = function () { 
-        this._soundFileInput = audioContext.createMediaElementSource(this._audio) 
-      };
-      window.setTimeout(createSoundFileNode.bind(this), 200, true);
+	  },
+	  createSoundFileNode: function () {
+	    this._soundFileInput = audioContext.createMediaElementSource(this._audio);
+	    this.trigger('soundfile:ready');
 	  },
 	  connectSoundfile: function () {
 	  	this._soundFileInput.connect(this._analysisInputNode);
@@ -167,14 +168,14 @@ var app = app || {};
 	  	this._audio.pause();
 	  	this.set({ playing: false });
 	  },
-	  setupNewSoundfile: function() {
-	    console.log('audiofilesource changed');
-	  },
   	soundfileEnded: function () {
   		// reload audio because setting this._audio.currentTime is not working, 
   		// might be because of currently immature Web Audio API for .wav files?
-	    this._audio.src = this._audio.src; 
+	    this.once('soundfile:loaded', this.resetAudio, this);
 	    this.inputToggle();
+  	},
+  	resetAudio: function () {
+  		this._audio.currentTime = 0.0;
   	},
 
 	  // ANALYSER METHODS
@@ -244,7 +245,7 @@ var app = app || {};
 	  	// AUDIO API GRAPH:
 	    // input -> lowpass -> highpass -> buffer for analysis -> speaker output
 
-	    analysisInputNode = audioContext.createGainNode();
+	    this._analysisInputNode = audioContext.createGainNode();
 
 	    // Low-pass filter. 
 	    lpF = audioContext.createBiquadFilter();
@@ -259,20 +260,18 @@ var app = app || {};
 	    hpF.Q = q;
 
 	    // Connect all of the nodes
-	    analysisInputNode.connect(lpF);
+	    this._analysisInputNode.connect(lpF);
 	    lpF.connect(hpF);
 	    hpF.connect(this._analyser);
 	    
-
-	    console.log('audio analysis graph set up!');
-	    return(analysisInputNode);
+	    this.trigger('audiograph:ready');
 	  },
 
 	  // SWAP BETWEEN SOUNDFILE / MICROPHONE
 	  // ----------------------------------------------
 
 	  inputToggle: function() {
-	    if ( this.get('playing') ) {
+			if ( this.get('playing') || this.get('processing') ) {
 	      this.changeState(this._states['microphone']);
 	    }
 	    else {

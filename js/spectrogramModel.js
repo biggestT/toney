@@ -2,8 +2,67 @@ var app = app || {};
 
 (function () {
 	'use strict';
+
+	// STATE PATTERN
+	// these states are used by the spectrogramModel to keep track of inputsources
+	// ---------------------------------------------------------------
+
+	var BaseState = Backbone.Model.extend({
+	  initialize: function(analyser) {
+	    this._analyser = analyser;
+	  }
+	})
+
+	var MicrophoneState = BaseState.extend({
+	  defaults: {
+	    index: 0,
+	    name: "microphone" 
+	  },
+	  execute: function() {
+	    this._analyser.connectMicrophone();
+	    this._analyser.startSoundAnalysis();
+	  },
+	  exit: function() {
+	    this._analyser.stopSoundAnalysis();
+	    this._analyser.disconnectMicrophone();
+	  }
+	});
+
+	var SoundfileState = BaseState.extend({
+	  defaults: {
+	    index: 1,
+	    name: "soundfile" 
+	  },
+	  execute: function() {
+	    this._analyser.connectSoundfile();
+	    this._analyser.startSoundAnalysis();
+	  },
+	  exit: function() {
+	    this._analyser.stopSoundAnalysis();
+	    this._analyser.disconnectSoundfile();
+	  }
+	});
+
+	var ProcessingState = BaseState.extend({
+	  defaults: {
+	    index: 2,
+	    name: "processing" 
+	  },
+	  execute: function() {
+	    this._analyser.set({ 'processing': true });
+	    console.log('processing ...');
+	  },
+	  exit: function() {
+	    this._analyser.set({ 'processing': false });
+	    console.log('finished processing');
+	  }
+	});
 	
+	// ONLY USE ONE AUDIOCONTEXT
 	var audioContext = null;
+
+	// THE MODEL WHICH OUTPUTS A SPECTROGRAM TO LISTENING VIEWS AND/OR MODELS
+	// -----------------------------------------------------------------------
 
 	app.SpectrogramModel = Backbone.Model.extend({
 
@@ -18,7 +77,7 @@ var app = app || {};
 				fMax: 3400,
 				qFactor: 0.05
 			},
-			soundfileSource: 'audio/ma_short.wav',
+			soundfileSource: 'audio/ma_short.mp3',
 			currState: null,
 			playing: false,
 			processing: false,
@@ -219,6 +278,7 @@ var app = app || {};
 	    else {
 	      this.changeState(this._states['soundfile']);
 	    }
+	    this.trigger('sourceChanged');
 	  },
 
 	  // STATE PATTERN UTILITY

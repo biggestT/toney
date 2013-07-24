@@ -73,7 +73,7 @@ app.ToneLineView = Backbone.View.extend({
 			this.sourceStates.microphone.draw();
 		} 
 	},
-  	drawGradientLine: function(line) {
+  drawGradientLine: function(line) {
 		var ctx = this.ctx;
 		var c = ctx.canvas;
 		var l = this.length;

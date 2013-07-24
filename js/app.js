@@ -29,11 +29,16 @@ var app = app || {};
 			app.spectrogramModel = new app.SpectrogramModel();
 
 			var toneLineContext = this.$toneWindow[0].getContext('2d');
+			var spectrogramContext = this.$toneWindow[0].getContext('2d');
 
 			// var line = new app.ToneLineView({
 			// 	model: app.spectrogramModel,
 			// 	ctx: toneLineContext
 			// });
+			var spectrogram = new app.SpectrogramView({
+				model: app.spectrogramModel,
+				ctx: spectrogramContext
+			});
 
 			// Only for testing purposes, not used in production
 			var test = new app.TestView({

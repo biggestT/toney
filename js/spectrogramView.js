@@ -22,16 +22,16 @@ var app = app || {};
 			this.count = 0;
 
 			this.listenTo(this.model, "sourceChanged", this.changeColor);
-	    this.listenTo(this.model, "spectrogramChange", this.update);
+	    this.listenTo(this.model, "soundfile:updated", this.update);
+	    this.listenTo(this.model, "microphone:updated", this.update);
 		},
 
 
 		update: function (spec) {
-			if (this.model.get('playing')) {
-				this.count++;
-				this.drawSpectrogramPart(spec, this.count);
-				console.log('woa');
-			}
+			
+			this.count++;
+			this.drawSpectrogramPart(spec, this.count);
+
 			if (this.count > this.xLength) {
 				this.clearCanvas();
 				this.count = 0;

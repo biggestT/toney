@@ -25,26 +25,55 @@ var app = app || {};
 			// turn all button elements into nice jquery UI buttons
 			$('button').button();
 
-			// app.spectrogramModel = new app.spectrogramModel();
+			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
+			//---------------------------------------------------
+
 			app.spectrogramModel = new app.SpectrogramModel();
 
-			var toneLineContext = this.$toneWindow[0].getContext('2d');
-			var spectrogramContext = this.$toneWindow[0].getContext('2d');
+			// TONELINES
+			// --------------------------
 
-			// var line = new app.ToneLineView({
-			// 	model: app.spectrogramModel,
-			// 	ctx: toneLineContext
-			// });
-			var spectrogram = new app.SpectrogramView({
+			// TWO LINE MODELS FOR CALCULATING TONELINES
+			app.userToneModel = new app.TonelineModel( {
+				spectrogram: app.spectrogramModel,
+				watch: 'microphone:updated'
+			});
+			app.referenceToneModel = new app.TonelineModel( {
+				spectrogram: app.spectrogramModel,
+				watch: 'soundfile:updated',
+			});
+
+			// VIEWS CORRESPONDING TO THE TWO TONELINES
+			var toneLineContext = this.$toneWindow[0].getContext('2d');
+			
+			app.userToneline = new app.TonelineView({
+				model: app.userToneModel,
+				color: ['#BB0805', '#FF4D2E'],
+				ctx: toneLineContext
+			});	
+
+			app.referenceToneline = new app.TonelineView({
+				model: app.referenceToneModel,
+				color: ['#0BB400', '#2EFE3E'],
+				ctx: toneLineContext
+			});
+
+			
+			// SPECTROGRAM VIEW FOR TESTING PURPOSES
+			// ---------------------------
+			var spectrogramContext = this.$toneWindow[0].getContext('2d');
+			app.spectrogramView = new app.SpectrogramView({
 				model: app.spectrogramModel,
 				ctx: spectrogramContext
 			});
 
-			// Only for testing purposes, not used in production
-			var test = new app.TestView({
+			// TESTING VIEW FOR OUTPUTTING MATLAB FILES
+			// -------------------------------
+			app.testOutput = new app.TestView({
 				model: app.spectrogramModel
 			});
 			
+			// RE-RENDER THE APP WHEN INPUT CHANGES
 			this.listenTo( app.spectrogramModel, 'stateChanged', this.render );
 			
 			this.render();

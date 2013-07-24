@@ -25,6 +25,9 @@ var app = app || {};
 	  exit: function() {
 	    this._analyser.stopSoundAnalysis();
 	    this._analyser.disconnectMicrophone();
+	  },
+	  update: function () {
+	  	this._analyser.trigger('microphone:updated', this._analyser._data);
 	  }
 	});
 
@@ -40,6 +43,9 @@ var app = app || {};
 	  exit: function() {
 	    this._analyser.stopSoundAnalysis();
 	    this._analyser.disconnectSoundfile();
+	  },
+	  update: function () {
+	  	this._analyser.trigger('soundfile:updated', this._analyser._data);
 	  }
 	});
 
@@ -186,7 +192,6 @@ var app = app || {};
 	    this._analyser.fftSize = this.get('fftSize');
 	    this._analyser.smoothingTimeConstant = this.smoothing;
 	  	this._data = new Uint8Array(this._analyser.frequencyBinCount);
-	  	this.trigger('analyserReady');
 	  },
 	  startSoundAnalysis: function() {
 	    this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
@@ -199,7 +204,7 @@ var app = app || {};
 	  },
 		updateSpectrogram: function () {
 	    this._analyser.getByteFrequencyData(this._data);
-	    this.trigger('spectrogramChange', this._data);
+	    this.get('currState').update();
 	    this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
   	},
 
@@ -239,7 +244,7 @@ var app = app || {};
 		  // };
 
 		  // bufferFiller = audioContext.createScriptProcessor(bufferFillSize, 1, 1);
-		  // bufferFiller.onaudioprocess = fillBuffer(e).bind(this);
+		  // bufferFiller.onaudioprocess = fillBuffer.bind(this);
 
 		    
 	  	// AUDIO API GRAPH:

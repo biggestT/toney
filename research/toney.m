@@ -9,9 +9,9 @@ function [tonelines spectrum] = toney(sGram, threshold)
     m = floor(N/iterations)
     
     spectrum = ones(n, m);
-    for i = 1:m
-        spectrum(i,:) = spectrum(i,:) + i;
-    end
+    % for i = 1:m
+    %     spectrum(i,:) = spectrum(i,:) + i;
+    % end
     
     % Simulate javascript loop over n samples
     for s = 1:n

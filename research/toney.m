@@ -32,10 +32,10 @@ function [tonelines spectrum] = toney(sGram, threshold)
     end
     
     [maxvalues, tonelines] = max(spectrum,[],2);
-    
+    tonelines = tonelines./m;
     figure;
     plot(1:n,tonelines, '--.r');
-    axis([0 n 0 m/4]);
+    axis([0 n 0 1]);
     HeatMap(sGram');
    
  

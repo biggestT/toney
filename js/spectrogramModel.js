@@ -176,12 +176,10 @@ var app = app || {};
 	  },
   	soundfileEnded: function () {
   		// reload audio because setting this._audio.currentTime is not working, 
-  		// might be because of currently immature Web Audio API for .wav files?
-	    this.once('soundfile:loaded', this.resetAudio, this);
-	    this.inputToggle();
-  	},
-  	resetAudio: function () {
-  		this._audio.currentTime = 0.0;
+  		// might be because of currently immature Web Audio API?
+			this.initializeSoundfile();  
+	    this.once('soundfile:loaded', this.createSoundFileNode, this);
+	    this.once('soundfile:ready', this.inputToggle, this);
   	},
 
 	  // ANALYSER METHODS

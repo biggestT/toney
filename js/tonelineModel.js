@@ -10,7 +10,8 @@ var app = app || {};
 
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
-			varThreshold: 1000
+			varThreshold: 3,
+			maxAmplitude: 0.1
 		},
 
 		initialize: function () {
@@ -24,33 +25,28 @@ var app = app || {};
 	    
 		},
 		initializeArrays: function () {
-			// HPS SPECTRUM ARRAY INITIALIZATION FOR REUSE IN EACH HPS-LOOP
-			// -------------------------------------
-			this._spectrogramSize = this._spectrogram.get('fftSize')/2;
-			var m = Math.floor(this._spectrogramSize/this.get('iterations'));
-			this._cleanSpectrum = new Array(m);
-			// Psychoacoustic compensation to increase the importance of higher frequencies with an arbitrary constant
-	    // @TODO Not necessary?
-	    for (var j = 0; j < m; j++) {
-	      this._cleanSpectrum[j] = 1 + j;
-	    }
-	    // store the tones saved
 	    this._tones = [];
-			// store the current line 
 			this._line = [];
-			// store each line segment in a typed array
-			// this._lines[0] = new Float32Array(2);
+			this._spectrum = [];
 		},
 
 		// HPS ALGORITHM FOR PITCH DETECTION
   	// ------------------
 
 	  getPitchHPS: function (data) {
+	    // reset array for reuse
+	    this._spectrum.length = 0;
+
 	    var iterations = this.get('iterations');
+	    var varThreshold = this.get('varThreshold');
 	    var n = data.length;
 	    var m = Math.floor(n/iterations);
-	    var spectrum = this._cleanSpectrum;
-	    
+	    var spectrum = this._spectrum;
+
+	    for (var j = 0; j < m; j++) {
+	        spectrum[j] = 1 + j;
+	    }
+
 	    // Create the harmonic product spectrum 
 	    for (var i = 1; i < iterations; i++) {
 	      for (var j = 0; j < m; j++) {
@@ -58,18 +54,14 @@ var app = app || {};
 	      }
 	    }
 
-	    m = spectrum.length;
 	    // Find the index of the frequency with the highest amplitude in the HPS 
 	    var max = 0;
-	    var avg = 0;
 	    for (var j = 0; j < m; j++) {
 	        var v = spectrum[j];
-	        avg += v;
 	        if (spectrum[j] > spectrum[max]) {
 	            max = j;
 	        }
 	    }
-	    avg /= m;
 
 	    var s = 0; // sum for calculating variance
 	    var s2 = 0; // sum squared for calculation variance 
@@ -80,11 +72,11 @@ var app = app || {};
 	    var variance = (s2 - (s*s) / n) / n;
 	    var tone = max/m;
 	    // have to pass threshold variance to not be noise
-	    if ( variance > this.get('varThreshold') ) {
+	    // if ( variance > varThreshold ) {
 	        return tone;
-	    } else {
-	      return -1;
-	    }
+	    // } else {
+	      // return -1;
+	    // }
 
 	  },
 
@@ -128,7 +120,7 @@ var app = app || {};
 	    return [k, n]; //  k value and the length of the straight line
 	  },
 
-	  // UPDATE METHOND THAT RUNS APPROX 60 TIMES PER SECOND
+	  // UPDATE METHOD THAT RUNS APPROX 60 TIMES PER SECOND
 	  // ----------------------------------------------------
 
 	  update: function (spectrogram) {
@@ -138,11 +130,13 @@ var app = app || {};
 	    if (currPitch > 0) {
 	      this._tones.push(currPitch);
 	      var line = this.getLinearApproximation(this._tones);
-	      this.trigger('toneChange', line);
+	      line[0] = line[0]/this.get('maxAmplitude'); // normalise to dynamic range
+	      this.trigger('tonelineChange', line);
 	    } 
 	    // Reset data for the current input to prepare for the next speech sample
 	    else {
-	      this._tones = [];
+	      this._tones.length = 0;
+	      // this.trigger('tonelineReset');
 	    }
 	  }
 	});

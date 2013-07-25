@@ -20,7 +20,7 @@ var app = app || {};
 			this.$footer = this.$('#footer');
 			this.$main = this.$('#main');
 			this.$toneWindow = $('#toneWindow');
-			console.log(this.$toneWindow);
+			this.$spectrogramWindow = $('#spectrogramWindow');
 
 			// turn all button elements into nice jquery UI buttons
 			$('button').button();
@@ -61,7 +61,7 @@ var app = app || {};
 			
 			// SPECTROGRAM VIEW FOR TESTING PURPOSES
 			// ---------------------------
-			var spectrogramContext = this.$toneWindow[0].getContext('2d');
+			var spectrogramContext = this.$spectrogramWindow[0].getContext('2d');
 			app.spectrogramView = new app.SpectrogramView({
 				model: app.spectrogramModel,
 				ctx: spectrogramContext
@@ -69,9 +69,9 @@ var app = app || {};
 
 			// TESTING VIEW FOR OUTPUTTING MATLAB FILES
 			// -------------------------------
-			app.testOutput = new app.TestView({
-				model: app.spectrogramModel
-			});
+			// app.testOutput = new app.TestView({
+			// 	model: app.spectrogramModel
+			// });
 			
 			// RE-RENDER THE APP WHEN INPUT CHANGES
 			this.listenTo( app.spectrogramModel, 'stateChanged', this.render );

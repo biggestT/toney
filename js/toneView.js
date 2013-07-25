@@ -14,9 +14,11 @@ var app = app || {};
 		initialize: function() {
 					
 			this.ctx = this.options.ctx;
+			this.xLength = 50;
 			this.drawingColor = this.options.color;
 			this.lines = [];
 			this.listenTo(this.model, "tonelineChange", this.update);
+			this.listenTo(this.model, "tonelineReset", this.clearCanvas);
 
 		},
 		draw: function () {
@@ -29,7 +31,6 @@ var app = app || {};
 			var l = this.xLength;
 			var colors = this.drawingColor;
 			var xScale = c.width/l;
-
 			var grad = ctx.createLinearGradient(0, 0, N*xScale, c.height);
 			grad.addColorStop(0, colors[0]);
 			grad.addColorStop(1, colors[1]);
@@ -66,6 +67,7 @@ var app = app || {};
 		},
 		update: function(lines) {
 			// ugly fix to test for one line first
+			this.clearCanvas();
 			this.lines[0] = lines;
 			this.drawToneline(this.lines, this.lines[0][1]);
 		}

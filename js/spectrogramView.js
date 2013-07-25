@@ -33,7 +33,6 @@ var app = app || {};
 			this.drawSpectrogramPart(spec, this.count);
 
 			if (this.count > this.xLength) {
-				this.clearCanvas();
 				this.count = 0;
 			}
 		},
@@ -65,9 +64,6 @@ var app = app || {};
 			for (var i = 0; i < spec.length; i++) {
 
 				ctx.fillStyle = color + spec[i]/255*4 + ')';
-				if(spec[i] > 0) {
-					console.log(color);
-				}
 				ctx.fillRect(xStart,yStart,xScale,dy);		
 				
 				yStart += dy;

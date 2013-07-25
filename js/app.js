@@ -1,68 +1,109 @@
 var app = app || {};
 
-app.AppView = Backbone.View.extend({
+(function ($) {
+	'use strict';
 
-	// Bind app to existing HTML div
-	el: '#toneyApp',
+	app.AppView = Backbone.View.extend({
 
-	// Delegated events for user actions
-	events: {
-		'click #playPause': 'togglePlayPause'
-	},
+		// Bind app to existing HTML div
+		el: '#toneyApp',
 
-	// UNDER CONSTRUCTION! 
-	initialize: function() {
+		// Delegated events for user actions
+		events: {
+			'click #playPause': 'togglePlayPause'
+		},
 
-		this.playPauseButton = this.$('#playPause');
-		this.$footer = this.$('#footer');
-		this.$main = this.$('#main');
-		this.$toneWindow = $('#toneWindow');
-		console.log(this.$toneWindow);
+		// UNDER CONSTRUCTION! 
+		initialize: function() {
 
-		// turn all button elements into nice jquery UI buttons
-		$('button').button();
+			this.playPauseButton = this.$('#playPause');
+			this.$footer = this.$('#footer');
+			this.$main = this.$('#main');
+			this.$toneWindow = $('#toneWindow');
+			this.$spectrogramWindow = $('#spectrogramWindow');
 
-		app.toneModel = new app.ToneModel();
+			// turn all button elements into nice jquery UI buttons
+			$('button').button();
 
-		var toneLineContext = this.$toneWindow[0].getContext('2d');
+			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
+			//---------------------------------------------------
 
-		var line = new app.ToneLineView({
-			model: app.toneModel,
-			ctx: toneLineContext
-		});
+			app.spectrogramModel = new app.SpectrogramModel();
 
-		// Only for testing purposes, not used in production
-		var test = new app.TestView({
-			model: app.toneModel
-		});
-		
-		this.listenTo( app.toneModel, 'stateChanged', this.render );
-		
-		this.render();
-	},
-	// Re-rendering the App when the model's state changes
-	render: function () {
-		if (app.toneModel.get('processing')) {
-			$(this.el).hide();
-			$('#processingImage').show();
-		}
-		// if not in processing state:
-		else {
-			$(this.el).show();
-			$('#processingImage').hide();
-			if (app.toneModel.get('playing')) {
-				this.playPauseButton.button('option', 'label', 'Pause');
-				this.$footer.html('listening to the soundfile: </br>' + app.toneModel.get('soundfileSource') );
+			// TONELINES
+			// --------------------------
+
+			// TWO LINE MODELS FOR CALCULATING TONELINES
+			app.userToneModel = new app.TonelineModel( {
+				spectrogram: app.spectrogramModel,
+				watch: 'microphone:updated'
+			});
+			app.referenceToneModel = new app.TonelineModel( {
+				spectrogram: app.spectrogramModel,
+				watch: 'soundfile:updated',
+			});
+
+			// VIEWS CORRESPONDING TO THE TWO TONELINES
+			var toneLineContext = this.$toneWindow[0].getContext('2d');
+			
+			app.userToneline = new app.TonelineView({
+				model: app.userToneModel,
+				color: ['#BB0805', '#FF4D2E'],
+				ctx: toneLineContext
+			});	
+
+			app.referenceToneline = new app.TonelineView({
+				model: app.referenceToneModel,
+				color: ['#0BB400', '#2EFE3E'],
+				ctx: toneLineContext
+			});
+
+			
+			// SPECTROGRAM VIEW FOR TESTING PURPOSES
+			// ---------------------------
+			var spectrogramContext = this.$spectrogramWindow[0].getContext('2d');
+			app.spectrogramView = new app.SpectrogramView({
+				model: app.spectrogramModel,
+				ctx: spectrogramContext
+			});
+
+			// TESTING VIEW FOR OUTPUTTING MATLAB FILES
+			// -------------------------------
+			// app.testOutput = new app.TestView({
+			// 	model: app.spectrogramModel
+			// });
+			
+			// RE-RENDER THE APP WHEN INPUT CHANGES
+			this.listenTo( app.spectrogramModel, 'stateChanged', this.render );
+			
+			this.render();
+		},
+		// Re-rendering the App when the model's state changes
+		render: function () {
+			if (app.spectrogramModel.get('processing')) {
+				$(this.el).hide();
+				$('#processingImage').show();
 			}
+			// if not in processing state:
 			else {
-				this.playPauseButton.button('option', 'label', 'Play');
-				this.$footer.text('please speak into the microphone');
+
+				$(this.el).show();
+				$('#processingImage').hide();
+				if (app.spectrogramModel.get('playing')) {
+							console.log('rendering');
+					this.playPauseButton.button('option', 'label', 'Pause');
+					this.$footer.html('listening to the soundfile: </br>' + app.spectrogramModel.get('soundfileSource') );
+				}
+				else {
+					this.playPauseButton.button('option', 'label', 'Play');
+					this.$footer.text('please speak into the microphone');
+				}
 			}
+		},
+		// swap between playing and paused sound in model
+		togglePlayPause: function() {
+			app.spectrogramModel.inputToggle();
+			console.log('toggled play pause');
 		}
-	},
-	// swap between playing and paused sound in model
-	togglePlayPause: function() {
-		app.toneModel.playToggle();
-		console.log('toggled play pause');
-	}
-});
+	});
+})(jQuery);

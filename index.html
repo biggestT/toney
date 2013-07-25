@@ -15,11 +15,12 @@
 <body>
 	<a id="downloadFile"></a>
 	<section id="toneyApp">
+		<button id="playPause" ></button>
 		<section id="main">
-			<canvas id="toneWindow" width="800px" height="200px"></canvas>
+			<canvas id="spectrogramWindow" width="400px" height="200px"></canvas>
+			<canvas id="toneWindow" width="400px" height="200px"></canvas>
 			<!-- content to be created by scripts -->
 		</section>
-		<button id="playPause" >Play</button>
 		<footer id="footer"></footer>
 	</section>
 	<image id="processingImage" src="images/processing.gif"></image>
@@ -28,21 +29,23 @@
 	<!-- Third party js libraries -->
   <script type="text/javascript" src="js/lib/jquery-1.8.3.min.js"></script>
   <script type="text/javascript" src="js/lib/jquery-ui-1.9.2.custom.min.js"></script>
-  <script type="text/javascript" src="js/lib/webgl-utils.js"></script>
   <script type="text/javascript" src="js/lib/underscore.js"></script>
   <script type="text/javascript" src="js/lib/backbone.js"></script>
   <!-- Toney js files -->
-  <script type="text/javascript" src="js/inputStates.js"></script>
-  <script type="text/javascript" src="js/toneModel.js"></script> 
-  <script type="text/javascript" src="js/testView.js"></script> <!-- Only when testing -->
+  <script type="text/javascript" src="js/spectrogramModel.js"></script> 
+  <script type="text/javascript" src="js/tonelineModel.js"></script> 
+  <script type="text/javascript" src="js/testView.js"></script> <!-- Only for testing -->
+  <script type="text/javascript" src="js/spectrogramView.js"></script> <!-- Only for testing -->
   <script type="text/javascript" src="js/toneView.js"></script>
   <script type="text/javascript" src="js/app.js"></script>
 
   <script>
-  // Kick off everyting!
-	$(function() {
-		new app.AppView();
-	});
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.AppView();
+		});
 	</script>
 </body>
 </html>

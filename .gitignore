@@ -1,3 +1,6 @@
 _site/
 spectrograms/
 performance/
+node_modules/
+build/
+dist/

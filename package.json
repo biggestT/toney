@@ -1,0 +1,17 @@
+{
+  "name": "toney",
+  "version": "0.1.0-beta",
+  "description": "real time visual feedback on chinese tones",
+  "homepage": "http://biggestt.github.io/toney/",
+  "bugs": "https://github.com/biggestT/toney/issues",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~2.1",
+    "grunt-contrib-uglify": "~2.2",
+    "grunt-contrib-concat": "~0.3.0",
+    "install": "~0.1.7",
+    "grunt-contrib-watch": "~0.5.1",
+    "npm": "~1.3.5",
+    "grunt-contrib-cssmin": "~0.6.1"
+  }
+}

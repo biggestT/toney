@@ -7,7 +7,6 @@
 	<meta name="keywords" content="Chinese,tones,Web audio,JavaScript">
 	<meta name="author" content="Tor Nilsson Öhrn">
     <title>Toney</title>
-  <link type="text/css" href="css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet">
   <link type="text/css"href="css/toney.css"  rel="stylesheet" >
   <link rel="shortcut icon" href="favicon.ico" />
 </head>
@@ -15,7 +14,7 @@
 <body>
 	<a id="downloadFile"></a>
 	<section id="toneyApp">
-		<button id="playPause" ></button>
+		<input type="button" id="playPause" ></button>
 		<section id="main">
 			<canvas id="spectrogramWindow" width="400px" height="200px"></canvas>
 			<canvas id="toneWindow" width="400px" height="200px"></canvas>
@@ -27,8 +26,7 @@
 	<!-- LOAD SCRIPTS -->
 
 	<!-- Third party js libraries -->
-  <script type="text/javascript" src="js/lib/jquery-1.8.3.min.js"></script>
-  <script type="text/javascript" src="js/lib/jquery-ui-1.9.2.custom.min.js"></script>
+  <script type="text/javascript" src="js/lib/jquery-1.10.2.js"></script>
   <script type="text/javascript" src="js/lib/underscore.js"></script>
   <script type="text/javascript" src="js/lib/backbone.js"></script>
   <!-- Toney js files -->

@@ -23,9 +23,9 @@ var app = app || {};
 		},
 		draw: function () {
 			this.clearCanvas();
-			this.drawGradientLine()
+			this.drawGradientLine();
 		},
-	  drawToneline: function (lines, N) {
+		drawToneline: function (lines, N) {
 			var ctx = this.ctx;
 			var c = ctx.canvas;
 			var l = this.xLength;
@@ -48,18 +48,18 @@ var app = app || {};
 				var dy = -k*c.height;
 				var dx = n*xScale;
 				var start = [0, 0];
-		 		var stop = [dx, dy];
+				var stop = [dx, dy];
 
-		 		ctx.transform(1,0,0,1,xStart,yStart)
+					ctx.transform(1,0,0,1,xStart,yStart);
 					ctx.beginPath();
 					ctx.moveTo(start[0], start[1]);
-			  	ctx.lineTo(stop[0], stop[1]);
+					ctx.lineTo(stop[0], stop[1]);
 					ctx.stroke();				
-		 		ctx.transform(1,0,0,1,-xStart,-yStart)
+				ctx.transform(1,0,0,1,-xStart,-yStart);
 
 				yStart += dy;
 				xStart += dx;
-			};
+			}
 		},
 		clearCanvas: function() {
 			var c = this.ctx.canvas;

@@ -4,30 +4,21 @@ title:  Demo of current testversion
 tagline: Continuously updated demo 
 ---
 {% include JB/setup %}
-<head>
-	<meta charset="utf-8"/>
-	<meta name="description" content="Gives you realtime visual feedback on your pitch when speaking Chinese">
-	<meta name="keywords" content="Chinese,tones,Web audio,JavaScript">
-	<meta name="author" content="Tor Nilsson Öhrn">
-    <title>Toney</title>
-  <link type="text/css"href="{{ HOME_PATH }}/assets/demo/css/toney.min.css"  rel="stylesheet" >
-  <link rel="shortcut icon" href="favicon.ico" />
-</head>
 
 <section id="toneyApp">
+		<footer id="footer"></footer>
 		<input type="button" id="playPause" ></button>
 		<section id="main">
-			<canvas id="spectrogramWindow" width="400px" height="200px"></canvas>
-			<canvas id="toneWindow" width="400px" height="200px"></canvas>
+			<canvas id="toneWindow" width="400px" height="150px"></canvas>
+			<canvas id="spectrogramWindow" width="400px" height="150px"></canvas>
 		</section>
-		<footer id="footer"></footer>
 </section>
-<image id="processingImage" src="{{ HOME_PATH }}/assets/build/images/processing.gif"></image>
+<image id="processingImage" src="{{ BASE_PATH }}/assets/demo/images/processing.gif"></image>
 
-<script type="text/javascript" src="{{ HOME_PATH }}/assets/demo/js/lib-min/underscore-min.js"></script>
-<script type="text/javascript" src="{{ HOME_PATH }}/assets/demo/js/lib-min/jquery-1.10.2.min.js"></script>
-<script type="text/javascript" src="{{ HOME_PATH }}/assets/demo/js/lib-min/backbone-min.js"></script>
-<script type="text/javascript" src="{{ HOME_PATH }}/assets/demo/js/toney.min.js"></script>
+<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/underscore-min.js"></script>
+<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/backbone-min.js"></script>
+<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/toney.min.js"></script>
 
 <script>
   var app = app || {};
@@ -37,3 +28,7 @@ tagline: Continuously updated demo
 		new app.AppView();
 	});
 </script>
+
+This is an initial test to start with. A major issue is that only one fourth of the available frequency resolution is used in the HPS-algorithms pitch-detection. 
+
+{% include JB/comments %}

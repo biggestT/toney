@@ -8,3 +8,9 @@ Thumbs.db
 
 .rbenv-version
 .rvmrc
+
+_site/
+spectrograms/
+performance/
+node_modules/
+dist/

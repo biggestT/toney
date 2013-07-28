@@ -20,7 +20,6 @@ var app = app || {};
 			this.$footer = this.$('#footer');
 			this.$main = this.$('#main');
 			this.$toneWindow = $('#toneWindow');
-			this.$spectrogramWindow = $('#spectrogramWindow');
 
 			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
 			//---------------------------------------------------
@@ -55,21 +54,7 @@ var app = app || {};
 				ctx: toneLineContext
 			});
 
-			
-			// SPECTROGRAM VIEW FOR TESTING PURPOSES
-			// ---------------------------
-			var spectrogramContext = this.$spectrogramWindow[0].getContext('2d');
-			app.spectrogramView = new app.SpectrogramView({
-				model: app.spectrogramModel,
-				ctx: spectrogramContext
-			});
 
-			//	TESTING VIEW FOR OUTPUTTING MATLAB FILES
-			//	-------------------------------
-			//	app.testOutput = new app.TestView({
-			//	model: app.spectrogramModel
-			// });
-			
 			// RE-RENDER THE APP WHEN INPUT CHANGES
 			this.listenTo( app.spectrogramModel, 'stateChanged', this.render );
 			

@@ -16,7 +16,7 @@ var app = app || {};
     },
     storeTestData: function (data) {
       if (this._testCount < this._maxCount) {
-        if (this._testData.length == 0) {
+        if (this._testData.length === 0) {
           this._testStart = new Date().getTime();
         }
         this._testData[this._testCount] = Array.apply( [], data );
@@ -69,14 +69,14 @@ var app = app || {};
         var testTime = source.getTestTime();
         var output = 'tTest = ' + testTime + ';'; // String to store all data
         output += 'res = ' + resolution + ';';
-        output += 'fLimits = [' + fLimits['fMin'] + ' ' + fLimits['fMax'] + ' ];';
+        output += 'fLimits = [' + fLimits.fMin + ' ' + fLimits.fMax + ' ];';
         output += name + ' = [';
         for (var i = 0; i < data.length; i++) {
           for (var j = 0; j < data[i].length; j++) {
             output +=  data[i][j] + ' ';
-          };
+          }
           if (i != data.length-1) { output += ';'; }
-        };
+        }
         output += '];';
         output = [output];
         window.URL = window.webkitURL || window.URL;
@@ -84,7 +84,7 @@ var app = app || {};
         var a = document.getElementById('downloadFile');
         a.hidden = '';
         a.href = window.URL.createObjectURL(file);
-        a.download = name + resolution + fLimits['fMin'] + fLimits['fMax'] +'.m';
+        a.download = name + resolution + fLimits.fMin + fLimits.fMax +'.m';
         a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
 
         source.clearTestData();

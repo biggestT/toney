@@ -22,8 +22,8 @@ var app = app || {};
 			this.count = 0;
 
 			this.listenTo(this.model, "sourceChanged", this.changeColor);
-	    this.listenTo(this.model, "soundfile:updated", this.update);
-	    this.listenTo(this.model, "microphone:updated", this.update);
+			this.listenTo(this.model, "soundfile:updated", this.update);
+			this.listenTo(this.model, "microphone:updated", this.update);
 		},
 
 
@@ -67,7 +67,7 @@ var app = app || {};
 				ctx.fillRect(xStart,yStart,xScale,dy);		
 				
 				yStart += dy;
-			};
+			}
 		}
 	});
 })();

@@ -1,12 +1,21 @@
 /* modifications by Tor */
 @import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans&subset=latin-ext);
 
 body {
   /*padding:50px;*/
   font:16px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color:#555;
+  color:#444;
   font-weight:300;
 }
+
+p {
+  font-family: "Open Sans", sans-serif;
+  line-height: 1.8;
+  font-size: 13px;
+  margin-bottom: 50px;
+}
+
 .post-full img {
   display: block;
 }
@@ -18,18 +27,20 @@ small {
   margin-top: 10px;
   display: block;
 }
+
 /* Twitter-bootstrap modifications by jekyll-bootstrap */
 
 /* Custom container */
 .container-narrow {
   margin: 0 auto;
-  max-width: 700px; }
+  max-width: 500px; }
 
 .container-narrow > hr {
   margin: 30px 0; }
 
 .navbar .nav {
-  float: right; }
+  float: right; 
+  margin-top: 20px}
 
 /* posts index */
 .post > h3.title {

@@ -1,0 +1,39 @@
+
+	<section id="toneyApp">
+		<input type="button" id="playPause" ></button>
+		<section id="main">
+			
+			<canvas id="spectrogramWindow" width="400px" height="200px"></canvas>
+			
+			<canvas id="toneWindow" width="400px" height="200px"></canvas>
+		</section>
+		<footer id="footer"></footer>
+	</section>
+
+	<image id="processingImage" src="images/processing.gif"></image>
+
+
+
+
+	<script type="text/javascript" src="js/lib/underscore.js"></script>
+	<script type="text/javascript" src="js/lib/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="js/lib/backbone.js"></script>
+	<script type="text/javascript" src="js/lib/dspMod.js"></script>
+
+  <script type="text/javascript" src="js/spectrogramModel.js"></script> 
+  <script type="text/javascript" src="js/tonelineModel.js"></script> 
+  <script type="text/javascript" src="js/test/testView.js"></script> <!-- Only for testing -->
+  <script type="text/javascript" src="js/test/spectrogramView.js"></script> <!-- Only for testing -->
+  <script type="text/javascript" src="js/toneView.js"></script>
+  <script type="text/javascript" src="js/test/app.js"></script>
+  <script>
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.TestAppView();
+		});
+	</script>
+
+
+

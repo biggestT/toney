@@ -62,6 +62,8 @@ var app = app || {};
 			var xStart = index*xScale;
 			var yStart = c.height;
 			for (var i = 0; i < spec.length; i++) {
+				
+				ctx.clearRect(xStart,yStart,xScale,dy);
 
 				ctx.fillStyle = color + spec[i]/255*4 + ')';
 				ctx.fillRect(xStart,yStart,xScale,dy);		

@@ -78,7 +78,7 @@ var app = app || {};
 
 		defaults: {
 			fftSize: 2048,
-			smoothing: 0.5,
+			smoothing: 0.0,
 			bandpass: {
 				fMin: 160,
 				fMax: 3400,
@@ -117,8 +117,8 @@ var app = app || {};
 			this.changeState(this._states.processing);
 			
 			// PREPARE ANALYSEROTPUT, MICROPHONE AND SOUNDFILE, ONE AT THE TIME 
-			// this._analysisOutputNode = this.initializeAnalyser(); // Web Audio API:s built in Analyser node
-			this._analysisOutputNode = this.initializeDSP(); // External DSP.js analysis
+			this._analysisOutputNode = this.initializeAnalyser(); // Web Audio API:s built in Analyser node
+			// this._analysisOutputNode = this.initializeDSP(); // External DSP.js analysis
 			this.initializeMicrophone();
 			this.once('microphone:ready', this.initializeSoundfile, this);
 			this.once('soundfile:loaded', this.createSoundFileNode, this);
@@ -197,7 +197,7 @@ var app = app || {};
 		},
 		startSoundAnalysis: function() {
 			this._animationID = window.requestAnimationFrame(this.updateSpectrogramDSP.bind(this));
-			// this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
+			this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
 		},
 		stopSoundAnalysis: function() {
 			if ( this._animationID ) {
@@ -215,16 +215,16 @@ var app = app || {};
 
 				var dsr = this.get('downsampleRate');
 
-				this._gauss.process(this._buffer.data);
-				this._buffer.downsampled.length = 0;
-				for (var i = 0; i < this._buffer.data.length; i+=dsr) {
-					this._buffer.downsampled[i/dsr]=this._buffer.data[i];
-				};
-				this._buffer.upsampled.length = 0;
-				for (i = 0; i < this._buffer.data.length; i++) {
-					this._buffer.upsampled[i] = (i%dsr == 0) ? this._buffer.data[i] : 0 ;
-				};
-				this._fft.forward(this._buffer.upsampled);
+				// this._gauss.process(this._buffer.data);
+				// this._buffer.downsampled.length = 0;
+				// for (var i = 0; i < this._buffer.data.length; i+=dsr) {
+				// 	this._buffer.downsampled[i/dsr]=this._buffer.data[i];
+				// };
+				// this._buffer.upsampled.length = 0;
+				// for (i = 0; i < this._buffer.data.length; i++) {
+				// 	this._buffer.upsampled[i] = (i%dsr == 0) ? this._buffer.data[i] : 0 ;
+				// };
+				this._fft.forward(this._buffer.data);
 				this._data = this._fft.getDbSpectrum();
 				this.get('currState').update();
 				this._animationID = window.requestAnimationFrame(this.updateSpectrogramDSP.bind(this));
@@ -241,7 +241,7 @@ var app = app || {};
 			var fftSize = this.get('fftSize');
 			var dsr = this.get('downsampleRate');
 			var sampleRate = audioContext.sampleRate;
-
+			console.log(sampleRate);
 			this._buffer = {
 				fillSize: fftSize / dsr,
 				data: new Float32Array(fftSize),

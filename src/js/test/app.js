@@ -21,6 +21,7 @@ var app = app || {};
 			this.$main = this.$('#main');
 			this.$toneWindow = $('#toneWindow');
 			this.$spectrogramWindow = $('#spectrogramWindow');
+			this.$sliders = $('#sliders');
 
 			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
 			//---------------------------------------------------
@@ -64,6 +65,10 @@ var app = app || {};
 				ctx: spectrogramContext
 			});
 
+			// SLIDERS FOR TESTING PURPOSES
+			// ---------------------------
+			this.listenTo( app.spectrogramModel, 'audiograph:ready', this.initializeSliders );
+		
 			//	TESTING VIEW FOR OUTPUTTING MATLAB FILES
 			//	-------------------------------
 			//	app.testOutput = new app.TestView({
@@ -89,7 +94,7 @@ var app = app || {};
 				if (app.spectrogramModel.get('playing')) {
 							console.log('rendering');
 					this.playPauseButton.prop('value', 'Pause');
-					this.$footer.html('listening to the soundfile: </br>' + app.spectrogramModel.get('soundfileSource') );
+					this.$footer.html('listening to the soundfile: ' + app.spectrogramModel.get('soundfileSource') );
 				}
 				else {
 					this.playPauseButton.prop('value', 'Play');
@@ -101,6 +106,11 @@ var app = app || {};
 		togglePlayPause: function() {
 			app.spectrogramModel.inputToggle();
 			console.log('toggled play pause');
+		},
+		initializeSliders: function () {
+				app.slidersViewController = new app.SlidersViewController({
+					model: app.spectrogramModel
+				});
 		}
 	});
 })(jQuery);

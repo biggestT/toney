@@ -45,7 +45,6 @@ var app = app || {};
 			this._analyser.disconnectSoundfile();
 		},
 		update: function () {
-			console.log(this._analyser._data);
 			this._analyser.trigger('soundfile:updated', this._analyser._data);
 		}
 	});
@@ -89,6 +88,8 @@ var app = app || {};
 			downsampleRate: 4,
 			playing: false,
 			processing: false,
+			externalAnalyser: false,
+			audioNodes: []
 		},
 
 		// INITIALIZE THE WHOLE AUDIO SETUP FOR SPECTROGRAM ANALYSIS
@@ -117,14 +118,15 @@ var app = app || {};
 			this.changeState(this._states.processing);
 			
 			// PREPARE ANALYSEROTPUT, MICROPHONE AND SOUNDFILE, ONE AT THE TIME 
-			this._analysisOutputNode = this.initializeAnalyser(); // Web Audio API:s built in Analyser node
-			// this._analysisOutputNode = this.initializeDSP(); // External DSP.js analysis
+			this._analysisOutputNode = (this.get('externalAnalyser')) ? this.initializeDSP() // External DSP.js analysis 
+			: this.initializeAnalyser(); // Web Audio API:s built  in
+
 			this.initializeMicrophone();
 			this.once('microphone:ready', this.initializeSoundfile, this);
 			this.once('soundfile:loaded', this.createSoundFileNode, this);
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
 			this.once('audiograph:ready', this.inputToggle, this);
-		 
+		 	
 			// PERMANENT EVENT BINDINGS
 			// ---------------------------
 			this.on('soundfile:ended', this.soundfileEnded, this);
@@ -196,8 +198,9 @@ var app = app || {};
 			return analyser;
 		},
 		startSoundAnalysis: function() {
-			this._animationID = window.requestAnimationFrame(this.updateSpectrogramDSP.bind(this));
-			this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
+			this._animationID = (this.get('externalAnalyser')) ? 
+			window.requestAnimationFrame(this.updateSpectrogramDSP.bind(this))
+			: window.requestAnimationFrame(this.updateSpectrogram.bind(this));
 		},
 		stopSoundAnalysis: function() {
 			if ( this._animationID ) {
@@ -215,15 +218,6 @@ var app = app || {};
 
 				var dsr = this.get('downsampleRate');
 
-				// this._gauss.process(this._buffer.data);
-				// this._buffer.downsampled.length = 0;
-				// for (var i = 0; i < this._buffer.data.length; i+=dsr) {
-				// 	this._buffer.downsampled[i/dsr]=this._buffer.data[i];
-				// };
-				// this._buffer.upsampled.length = 0;
-				// for (i = 0; i < this._buffer.data.length; i++) {
-				// 	this._buffer.upsampled[i] = (i%dsr == 0) ? this._buffer.data[i] : 0 ;
-				// };
 				this._fft.forward(this._buffer.data);
 				this._data = this._fft.getDbSpectrum();
 				this.get('currState').update();
@@ -232,7 +226,7 @@ var app = app || {};
 			
 		},
 
-		// BUFFER INITIALIZATION FOR NON-ANALYSER NODE ANALYSIS
+		// BUFFER INITIALIZATION FOR ANALYSIS WITH EXTERNAL DSP.JS LIBRARY
 
 		// Following the example at 
 		// http://phenomnomnominal.github.io/docs/tuner.html
@@ -251,12 +245,6 @@ var app = app || {};
 
 		  this._fft = new RFFT(fftSize, sampleRate / dsr);
 		  this._gauss = new WindowFunction(DSP.GAUSS);
-
-		  // Initialize array for down/up sampling used to input to FFT analysis
-		  
-		  // this._downsampled = new Uint8Array(this._bufferFillSize);
-		  // this._upsampled = new Uint8Array(fftSize);
-	  	// this._buffer = new Uint8Array(fftSize);
 
 	  	for (var i = 0; i < fftSize; i++) {
 	  		this._buffer.data[i] = 0;
@@ -284,7 +272,7 @@ var app = app || {};
 
 		initializeAudioGraph: function() {
 
-			var  lpF, hpF, fftSize, fmin, fmax, q, bp;
+			var  lpF, hpF, fftSize, fmin, fmax, q, bp, dComp;
 
 			fftSize = this.get('fftSize');
 			bp = this.get('bandpass');
@@ -309,11 +297,20 @@ var app = app || {};
 			hpF.frequency.value = fmin;
 			hpF.Q = q;
 
+			// Dynamic compressor node
+			dComp = audioContext.createDynamicsCompressor();
+
 			// Connect all of the nodes
 			this._analysisInputNode.connect(lpF);
 			lpF.connect(hpF);
-			hpF.connect(this._analysisOutputNode);
+			hpF.connect(dComp);
+			dComp.connect(this._analysisOutputNode);
 			this._analysisOutputNode.connect(audioContext.destination);
+
+			var audioNodes = this.get('audioNodes');
+			audioNodes.lPass = lpF;
+			audioNodes.hPass = hpF;
+			audioNodes.dComp = dComp;
 
 			this.trigger('audiograph:ready');
 		},

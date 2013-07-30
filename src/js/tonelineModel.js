@@ -11,7 +11,7 @@ var app = app || {};
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
 			varThreshold: 3,
-			maxAmplitude: 0.1
+			maxAmplitude: 0.05
 		},
 
 		initialize: function () {

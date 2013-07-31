@@ -126,10 +126,10 @@ var app = app || {};
 			this.once('soundfile:loaded', this.createSoundFileNode, this);
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
 			this.once('audiograph:ready', this.inputToggle, this);
-		 	
+				
 			// PERMANENT EVENT BINDINGS
 			// ---------------------------
-			this.on('soundfile:ended', this.soundfileEnded, this);
+			this.on('soundfile:ended', this.resetSoundfile, this);
 		},
 
 		// MICROPHONE METHODS
@@ -179,7 +179,7 @@ var app = app || {};
 			this._audio.pause();
 			this.set({ playing: false });
 		},
-		soundfileEnded: function () {
+		resetSoundfile: function () {
 			// reload audio because setting this._audio.currentTime is not working, 
 			// might be because of currently immature Web Audio API?
 			this.initializeSoundfile();	
@@ -240,31 +240,31 @@ var app = app || {};
 				fillSize: fftSize / dsr,
 				data: new Float32Array(fftSize),
 				downsampled: new Float32Array(this.fillSize),
-		  	upsampled: new Float32Array(fftSize)
+				upsampled: new Float32Array(fftSize)
 			};
 
-		  this._fft = new RFFT(fftSize, sampleRate / dsr);
-		  this._gauss = new WindowFunction(DSP.GAUSS);
+			this._fft = new RFFT(fftSize, sampleRate / dsr);
+			this._gauss = new WindowFunction(DSP.GAUSS);
 
-	  	for (var i = 0; i < fftSize; i++) {
-	  		this._buffer.data[i] = 0;
-	  	}
+			for (var i = 0; i < fftSize; i++) {
+				this._buffer.data[i] = 0;
+			}
 
-		  var bufferFillerNode = audioContext.createScriptProcessor(this._buffer.fillSize, 1, 1);
+			var bufferFillerNode = audioContext.createScriptProcessor(this._buffer.fillSize, 1, 1);
 
-		  bufferFillerNode.onaudioprocess = function(e) {
-		  	var input = e.inputBuffer.getChannelData(0);
-		  	for (var i = this.fillSize; i < this.data.length; i++) {
-		  		this.data[i-this.fillSize] = this.data[i];
-		  	}
-		  	for (var i = 0; i < input.length; i++) {
-		  		this.data[this.data.length-this.fillSize + i] = input[i];
-		  	}
+			bufferFillerNode.onaudioprocess = function(e) {
+				var input = e.inputBuffer.getChannelData(0);
+				for (var i = this.fillSize; i < this.data.length; i++) {
+					this.data[i-this.fillSize] = this.data[i];
+				}
+				for (i = 0; i < input.length; i++) {
+					this.data[this.data.length-this.fillSize + i] = input[i];
+				}
 
-		  	console.log('processing and filling buffer');
-		  }.bind(this._buffer);
+				console.log('processing and filling buffer');
+			}.bind(this._buffer);
 
-		  return bufferFillerNode;
+			return bufferFillerNode;
 		},
 
 		// INITIALIZE THE NODE STRUCTURE IN THE WEB AUDIO GRAPH

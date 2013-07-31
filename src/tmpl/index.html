@@ -1,42 +1,17 @@
 
+
+<!-- @if NODE_ENV == 'PRODUCTION' -->
+	
+
 	<section id="toneyApp">
 		<input type="button" id="playPause" ></button>
 		<section id="main">
-			<!-- @if NODE_ENV == 'DEVELOPMENT' -->
-			<canvas id="spectrogramWindow" width="400px" height="200px"></canvas>
-			<!-- @endif -->
-			<canvas id="toneWindow" width="400px" height="200px"></canvas>
+			<canvas id="gameWindow" width="400px" height="200px"></canvas>
 		</section>
 		<footer id="footer"></footer>
 	</section>
 
 	<image id="processingImage" src="images/processing.gif"></image>
-
-
-<!-- @if NODE_ENV == 'DEVELOPMENT' -->
-
-	<script type="text/javascript" src="js/lib/underscore.js"></script>
-	<script type="text/javascript" src="js/lib/jquery-1.10.2.js"></script>
-	<script type="text/javascript" src="js/lib/backbone.js"></script>
-
-  <script type="text/javascript" src="js/spectrogramModel.js"></script> 
-  <script type="text/javascript" src="js/tonelineModel.js"></script> 
-  <script type="text/javascript" src="js/test/testView.js"></script> <!-- Only for testing -->
-  <script type="text/javascript" src="js/test/spectrogramView.js"></script> <!-- Only for testing -->
-  <script type="text/javascript" src="js/toneView.js"></script>
-  <script type="text/javascript" src="js/test/app.js"></script>
-  <script>
-	  var app = app || {};
-	  'use strict';
-	  // Kick off everyting!
-		$(function() {
-			new app.TestAppView();
-		});
-	</script>
-
-<!-- @endif -->
-
-<!-- @if NODE_ENV == 'PRODUCTION' -->
 
   <script type="text/javascript" src="js/lib-min/underscore-min.js"></script>
 	<script type="text/javascript" src="js/lib-min/jquery-1.10.2.min.js"></script>
@@ -52,4 +27,46 @@
 		});
 	</script>
 
+<!-- @endif -->
+
+<!-- @if NODE_ENV == 'DEVELOPMENT' -->
+<link type="text/css"href="css/test/testToney.css"  rel="stylesheet" >
+
+	<section id="toneyApp">
+		<input type="button" id="playPause" ></input>
+		<footer id="footer"></footer>
+	<section id="sliders"></section>
+		<section id="main">
+			<canvas id="spectrogramWindow" width="550px" height="300px"></canvas>
+			<canvas id="gameWindow" width="300px" height="150px"></canvas>
+		</section>
+	</section>
+
+	<image id="processingImage" src="images/processing.gif"></image>
+
+	<script type="text/javascript" src="js/lib/underscore.js"></script>
+	<script type="text/javascript" src="js/lib/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="js/lib/backbone.js"></script>
+	<script type="text/javascript" src="js/lib/dspMod.js"></script>
+
+  <script type="text/javascript" src="js/spectrogramModel.js"></script> 
+  <script type="text/javascript" src="js/tonelineModel.js"></script> 
+  <script type="text/javascript" src="js/gameModel.js"></script> 
+  <script type="text/javascript" src="js/gameView.js"></script> 
+  <script type="text/javascript" src="js/toneView.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+  
+  <script type="text/javascript" src="js/test/testView.js"></script> 
+  <script type="text/javascript" src="js/test/spectrogramView.js"></script> 
+  <script type="text/javascript" src="js/test/sliderViewController.js"></script> 
+  <script type="text/javascript" src="js/test/testApp.js"></script>
+
+  <script>
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.TestAppView();
+		});
+	</script>
 <!-- @endif -->

@@ -6,14 +6,15 @@ var app = app || {};
 
 (function () {
 
+
 	app.TonelineView = Backbone.View.extend({
 		
 		tagName: 'canvas',
 		lineWidth: 15,
 
 		initialize: function() {
-					
-			this.ctx = this.options.ctx;
+			
+			this.ctx = app.game.ctx;
 			this.xLength = 50;
 			this.drawingColor = this.options.color;
 			this.lines = [];
@@ -25,7 +26,7 @@ var app = app || {};
 			this.clearCanvas();
 			this.drawGradientLine();
 		},
-		drawToneline: function (lines, N) {
+		drawToneline: function (lines, N, amplitude) {
 			var ctx = this.ctx;
 			var c = ctx.canvas;
 			var l = this.xLength;
@@ -40,7 +41,9 @@ var app = app || {};
 			ctx.lineCap="round";
 
 			var xStart = c.width/2-N/2*xScale;
+			console.log(amplitude);
 			var yStart = c.height/2;
+
 			for (var i = 0; i < lines.length; i++) {
 
 				var k = lines[i][0];
@@ -50,7 +53,7 @@ var app = app || {};
 				var start = [0, 0];
 				var stop = [dx, dy];
 
-					ctx.transform(1,0,0,1,xStart,yStart);
+				ctx.transform(1,0,0,1,xStart,yStart);
 					ctx.beginPath();
 					ctx.moveTo(start[0], start[1]);
 					ctx.lineTo(stop[0], stop[1]);
@@ -62,14 +65,15 @@ var app = app || {};
 			}
 		},
 		clearCanvas: function() {
-			var c = this.ctx.canvas;
-			this.ctx.clearRect(0, 0, c.width, c.height);
+			var ctx = this.ctx;
+			var c = ctx.canvas;
+			ctx.clearRect(0, 0, c.width, c.height);
 		},
 		update: function(lines) {
 			// ugly fix to test for one line first
 			this.clearCanvas();
 			this.lines[0] = lines;
-			this.drawToneline(this.lines, this.lines[0][1]);
+			this.drawToneline(this.lines, this.lines[0][1], this.lines[0][1]*this.lines[0][0]);
 		}
 	});
 })();

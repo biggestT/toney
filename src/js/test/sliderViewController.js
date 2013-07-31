@@ -10,7 +10,7 @@ var app = app || {};
 		el: '#sliders',
 
 		initialize: function () {
-			this._audioNodes = this.model.get('audioNodes');
+			this._audioNodes = app.spectrogram.get('audioNodes');
 			
 			for (var k in this._audioNodes) {
 				var nodeDiv = this.createNodeDiv(this._audioNodes[k]);

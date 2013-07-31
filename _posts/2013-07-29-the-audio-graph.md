@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "the Audio Graph"
-tagline: "Today's question is whether I should use the Web Audio API or and external JavaScript DSP library to get the spectrogram. Currently I get a spectrogram that covers an unnecessarily wide frequency range."
+tagline: "Today's question is whether I should use the Web Audio API or an external JavaScript DSP library to get the spectrogram. Currently I get a spectrogram that covers an unnecessarily wide frequency range."
 category: audio graph
 tags: [audio graph, algorithm, dsp.js, spectrogram]
 ---

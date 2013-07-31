@@ -1,0 +1,33 @@
+---
+layout: default
+---
+{% include JB/setup %}
+
+
+<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/jquery-1.10.2.min.js"></script>
+
+<script>
+	$(function() {
+	
+		var codemap = new Image();
+		codemap.src = '{{ BASE_PATH }}/assets/images/toneyUML.png';
+		console.log(codemap.height);
+		var background = $('body');
+
+		codemap.onload = function () {
+			this.css({
+				'background': 'url(' + codemap.src + ')' + ' center center no-repeat',
+				'background-size': 'contain',
+				'min-height': codemap.height+50,
+				'min-width': 0.9*$(document).width,
+				'display': 'block'
+			});
+			$('footer').hide();
+			$('hr').hide();
+
+		}.bind(background);
+		
+	});
+</script>
+
+

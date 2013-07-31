@@ -72,6 +72,7 @@ JB :
   categories_path : /categories.html
   about_path: /about.html
   devdemo_path: /demo.html
+  codemap_path: /codemap.html
   tags_path : /tags.html
   atom_path : /atom.xml
   rss_path : /rss.xml

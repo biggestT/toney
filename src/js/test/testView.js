@@ -81,12 +81,11 @@ var app = app || {};
         output = [output];
         window.URL = window.webkitURL || window.URL;
         var file = new Blob(output, { 'type' : 'text\/plain' });
-        var a = document.getElementById('downloadFile');
+        var a = document.getElementById('fileDownload');
         a.hidden = '';
         a.href = window.URL.createObjectURL(file);
         a.download = name + resolution + fLimits.fMin + fLimits.fMax +'.m';
         a.textContent = 'Download spectogram of latest recorded ' + name + ' data as an m-file!';
-
         source.clearTestData();
       }
     },

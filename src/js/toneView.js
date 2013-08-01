@@ -15,6 +15,7 @@ var app = app || {};
 		initialize: function() {
 			
 			this.ctx = app.game.ctx;
+			
 			this.xLength = 50;
 			this.drawingColor = this.options.color;
 			this.lines = [];
@@ -41,7 +42,6 @@ var app = app || {};
 			ctx.lineCap="round";
 
 			var xStart = c.width/2-N/2*xScale;
-			console.log(amplitude);
 			var yStart = c.height/2;
 
 			for (var i = 0; i < lines.length; i++) {

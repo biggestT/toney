@@ -16,11 +16,13 @@ var app = app || {};
 		// UNDER CONSTRUCTION! 
 		initialize: function() {
 
-			this.playPauseButton = this.$('#playPause');
-			this.$footer = this.$('#footer');
-			this.$main = this.$('#main');
-			this.$gameWindow = $('#gameWindow');
+			this.$loadingImage = $('<img>', { src: 'images/processing.gif', id: 'loadingImage'} );
+			this.$playPauseButton = $('<input>', { type: 'button', id: 'playPause', value: 'play' });
+			this.$footer = $('<footer>', { id: 'playPause' });
+			this.$gameWindow = $('<canvas>', { id: 'gamewindow' });
 
+			this.$el.append(this.$playPauseButton, [ this.$footer, this.$gameWindow  ]);
+			this.$el.parent().append( this.$loadingImage );
 
 			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
 			//---------------------------------------------------
@@ -47,20 +49,20 @@ var app = app || {};
 		render: function () {
 			if (app.spectrogram.get('processing')) {
 				$(this.el).hide();
-				$('#processingImage').show();
+				this.$loadingImage.show();
 			}
 			// if not in processing state:
 			else {
 
 				$(this.el).show();
-				$('#processingImage').hide();
+				this.$loadingImage.hide();
 				if (app.spectrogram.get('playing')) {
 							console.log('rendering');
-					this.playPauseButton.prop('value', 'Pause');
+					this.$playPauseButton.prop('value', 'Pause');
 					this.$footer.html('listening to the soundfile: </br>' + app.spectrogram.get('soundfileSource') );
 				}
 				else {
-					this.playPauseButton.prop('value', 'Play');
+					this.$playPauseButton.prop('value', 'Play');
 					this.$footer.text('please speak into the microphone');
 				}
 			}

@@ -16,8 +16,12 @@ var app = app || {};
 			// ######################
 
 
-			this.$spectrogramWindow = $('#spectrogramWindow');
-			this.$sliders = $('#sliders');
+			this.$spectrogramWindow = $('<canvas>', { id: 'spectrogramWindow', width: '40%', height: '40%'} );
+			this.$sliders = $('<section>', { id: 'sliders'} );
+			this.$fileDownload = $('<a>', {id: 'fileDownload'});
+
+			console.log(this.$el);
+			this.$el.prepend(this.$spectrogramWindow, [this.$sliders, this.$fileDownload ]);
 
 			// SPECTROGRAM VIEW FOR TESTING PURPOSES
 			// ---------------------------
@@ -31,10 +35,10 @@ var app = app || {};
 			// ---------------------------
 			this.listenTo( app.spectrogram, 'audiograph:ready', this.initializeSliders );
 		
-			//	TESTING VIEW FOR OUTPUTTING MATLAB FILES
-			//	-------------------------------
-			//	app.testOutput = new app.TestView({
-			//	model: app.spectrogramModel
+			// TESTING VIEW FOR OUTPUTTING MATLAB FILES
+			// -------------------------------
+			// app.testOutput = new app.TestView({
+			// 	model: app.spectrogram
 			// });
 
 		},

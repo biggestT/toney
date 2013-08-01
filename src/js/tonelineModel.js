@@ -95,7 +95,7 @@ var app = app || {};
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
 			varThreshold: 3,
-			maxAmplitude: 0.05
+			maxAmplitude: 0.1
 		},
 
 		initialize: function () {
@@ -120,7 +120,7 @@ var app = app || {};
 			if (currPitch > 0) {
 				this._tones.push(currPitch);
 				var line = getLinearApproximation(this._tones);
-				// line[0] = line[0]/this.get('maxAmplitude'); // normalise to dynamic range
+				line[0] = line[0]/this.get('maxAmplitude'); // normalise to dynamic range
 				this.trigger('tonelineChange', line);
 			} 
 			// Reset data for the current input to prepare for the next speech sample

@@ -83,9 +83,53 @@ var app = app || {};
 		// var a = avgY - b*avgX; 
 
 		// var corrCoeff = (varXY*varXY)/(varX*varY); // not used ATM
-
-		return [k, n]; //	k value and the length of the straight line
+		var segment = new Segment (k, n);
+		return segment; //	k value and the length of the straight line
 	};
+
+	// CLASS REPRESENTING ONE WHOLE TONELINE
+	// -----------------------------------
+
+	function Line() {
+		this.segments = [];
+	}
+	Line.prototype.resetLine = function () {
+		this.segments.length = 0;
+	}
+	Line.prototype.updateSegment = function (segment) {
+		if ( this.segments.length > 0 ) {
+			this.segments[this.segments.length-1] = segment;
+		}
+		else {
+			this.segments[0] = segment;
+		}
+	}
+	Line.prototype.getLineAmplitude = function () {
+		var max = 0;
+		for (var i in this.segments) {
+			var k = Math.abs(this.segments.k);
+			if (k > max) {
+				max = k;
+			}
+		}
+		return max;
+	}
+	Line.prototype.getLineLength = function () {
+		var n = 0;
+		for (var i in this.segments) {
+			n += this.segments[i].n;
+		}
+		return n;
+	}
+	Line.prototype.addSegment = function (segment) {
+		this.segments.push(segment);
+	}
+
+	// Class representing part of a toneline, i.e one segment
+	function Segment(k,n) {
+		this.k = k, // k value
+		this.n = n  // length of the segment
+	}
 
 	app.TonelineModel = Backbone.Model.extend({
 
@@ -95,7 +139,7 @@ var app = app || {};
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
 			varThreshold: 3,
-			maxAmplitude: 0.03
+			maxAmplitude: 0.05
 		},
 
 		initialize: function () {
@@ -104,7 +148,7 @@ var app = app || {};
 			this.listenTo(app.spectrogram, this.get('watch') , this.update);
 
 			this._tones = [];
-			this._line = [];
+			this._line = new Line();
 			this._spectrum = [];
 
 		},
@@ -116,13 +160,30 @@ var app = app || {};
 			this._spectrum.length = 0;
 			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'));
 
-			// only update line if not silence or noise
+			// only update line if considered being the same speech sample
 			if (this._silenceCount < 20) {
 				if (currPitch > 0) {
 					this._tones.push(currPitch);
-					var line = getLinearApproximation(this._tones);
-					line[0] = line[0]/this.get('maxAmplitude'); // normalise to dynamic range
-					if ( !isNaN(line[0]) && !isNaN(line[1]) ) { this.trigger('tonelineChange', line); }
+					var segment = getLinearApproximation(this._tones);
+					segment.k = segment.k/this.get('maxAmplitude'); // normalise to dynamic range
+
+					if ( !isNaN(segment.k) && !isNaN(segment.n) ) { 
+
+						// DETECT NEED FOR SEGMENTED REGRESSION ANALYSIS 
+						var signChange = segment.k*this._prevK;
+						if (signChange < -0.0002 && segment.n > 5) { // only start plotting new line if the flip is great enough and the line long enough
+							console.log(signChange);
+							this._line.addSegment(segment);
+							this._tones.length = 0;
+						}
+						else {
+							this._line.updateSegment(segment);
+						}
+
+						this._prevK = segment.k;
+						console.log(this._line);
+						this.trigger('tonelineChange', this._line);
+					}
 				} 
 				else {
 					this._silenceCount++;
@@ -132,6 +193,7 @@ var app = app || {};
 			// Reset data for the current input to prepare for the next speech sample
 			else {
 				this._tones.length = 0;
+				this._line.resetLine();
 				this._silenceCount = 0;
 				// this.trigger('tonelineReset');
 			}

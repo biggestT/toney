@@ -27,7 +27,9 @@ var app = app || {};
 			this.clearCanvas();
 			this.drawGradientLine();
 		},
-		drawToneline: function (lines, N, amplitude) {
+		drawToneline: function (line) {
+			var N = line.getLineLength();
+			var amplitude = line.getLineAmplitude();
 			var ctx = this.ctx;
 			var c = ctx.canvas;
 			var l = this.xLength;
@@ -42,13 +44,13 @@ var app = app || {};
 			ctx.lineCap="round";
 
 			var xStart = c.width/2-N/2*xScale;
-			var yStart = c.height/2;
+			var yStart = c.height/2+amplitude*c.height/2;
 			// console.log(amplitude + ' ' + lines[0][0] + ' ' + lines[0][1] + typeof lines[0][0]);
+			var segments = line.segments;
+			for (var i in segments) {
 
-			for (var i = 0; i < lines.length; i++) {
-
-				var k = lines[i][0];
-				var n = lines[i][1];
+				var k = segments[i].k;
+				var n = segments[i].n;
 				var dy = -k*c.height;
 				var dx = n*xScale;
 				var start = [0, 0];
@@ -70,11 +72,9 @@ var app = app || {};
 			var c = ctx.canvas;
 			ctx.clearRect(0, 0, c.width, c.height);
 		},
-		update: function(lines) {
-			// ugly fix to test for one line first
+		update: function(line) {
 			this.clearCanvas();
-			this.lines[0] = lines;
-			this.drawToneline(this.lines, this.lines[0][1], this.lines[0][1]*this.lines[0][0]);
+			this.drawToneline(line);
 		}
 	});
 })();

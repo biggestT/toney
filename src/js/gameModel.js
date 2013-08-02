@@ -41,6 +41,9 @@ var app = app || {};
 			this._tones = [];
 			this._line = [];
 			this._spectrum = [];
+		},
+		update: function () {
+			
 		}
 	});
 		

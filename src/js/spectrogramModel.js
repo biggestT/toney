@@ -312,7 +312,8 @@ var app = app || {};
 
 			// Dynamic compressor node
 			var dComp = audioContext.createDynamicsCompressor();
-			dComp.threshold = -12;
+			dComp.threshold = -10;
+			dComp.release = 0.60;
 			
 			audioNodes.push(lpF);
 			audioNodes.push(hpF);

@@ -20,8 +20,11 @@ var app = app || {};
 			this.$playPauseButton = $('<input>', { type: 'button', id: 'playPause', value: 'play' });
 			this.$footer = $('<footer>', { id: 'playPause' });
 			this.$gameWindow = $('<canvas>', { id: 'gamewindow' });
+			this.$gameWindow[0].width = 560;
+			this.$gameWindow[0].height = 315;
 
-			this.$el.append(this.$playPauseButton, [ this.$footer, this.$gameWindow  ]);
+
+			this.$el.append( this.$gameWindow , [ this.$footer, this.$playPauseButton   ]);
 			this.$el.parent().append( this.$loadingImage );
 
 			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES

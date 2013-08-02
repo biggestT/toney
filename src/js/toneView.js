@@ -43,6 +43,7 @@ var app = app || {};
 
 			var xStart = c.width/2-N/2*xScale;
 			var yStart = c.height/2;
+			// console.log(amplitude + ' ' + lines[0][0] + ' ' + lines[0][1] + typeof lines[0][0]);
 
 			for (var i = 0; i < lines.length; i++) {
 

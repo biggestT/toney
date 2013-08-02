@@ -17,7 +17,7 @@ var app = app || {};
 
 			this.ctx = this.options.ctx;
 
-			this.spectrogramSize = this.model.get('fftSize')/2;
+			this.spectrogramSize = this.model.get('spectrogramSize');
 			this.xLength = 500;
 			this.count = 0;
 

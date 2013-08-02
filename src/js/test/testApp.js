@@ -15,12 +15,9 @@ var app = app || {};
 			// ADD ADDITIONAL TESTING COMPONENTS TO THE APPLICATION 
 			// ######################
 
-
-			this.$spectrogramWindow = $('<canvas>', { id: 'spectrogramWindow', width: '40%', height: '40%'} );
+			this.$spectrogramWindow = $('<canvas>', { id: 'spectrogramWindow', width: '400px', height: '200px'} );
 			this.$sliders = $('<section>', { id: 'sliders'} );
-			this.$fileDownload = $('<a>', {id: 'fileDownload'});
-
-			console.log(this.$el);
+			this.$fileDownload = $('<a>', {id: 'fileDownload'} );
 			this.$el.prepend(this.$spectrogramWindow, [this.$sliders, this.$fileDownload ]);
 
 			// SPECTROGRAM VIEW FOR TESTING PURPOSES

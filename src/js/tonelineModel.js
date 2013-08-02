@@ -95,7 +95,7 @@ var app = app || {};
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
 			varThreshold: 3,
-			maxAmplitude: 0.1
+			maxAmplitude: 0.03
 		},
 
 		initialize: function () {
@@ -117,17 +117,25 @@ var app = app || {};
 			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'));
 
 			// only update line if not silence or noise
-			if (currPitch > 0) {
-				this._tones.push(currPitch);
-				var line = getLinearApproximation(this._tones);
-				line[0] = line[0]/this.get('maxAmplitude'); // normalise to dynamic range
-				this.trigger('tonelineChange', line);
-			} 
+			if (this._silenceCount < 20) {
+				if (currPitch > 0) {
+					this._tones.push(currPitch);
+					var line = getLinearApproximation(this._tones);
+					line[0] = line[0]/this.get('maxAmplitude'); // normalise to dynamic range
+					if ( !isNaN(line[0]) && !isNaN(line[1]) ) { this.trigger('tonelineChange', line); }
+				} 
+				else {
+					this._silenceCount++;
+				}
+			
+			}
 			// Reset data for the current input to prepare for the next speech sample
 			else {
 				this._tones.length = 0;
+				this._silenceCount = 0;
 				// this.trigger('tonelineReset');
 			}
+			
 		}
 	});
 })();

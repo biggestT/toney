@@ -17,22 +17,18 @@ input{
 }
 #sliders {
 	display: block;
-	width: 400px;
+	width: 600px;
 }
 canvas {
 	margin: 5px;
-	padding: 10px 10px;
+	/*padding: 10px 10px;
 	border: solid 1px;
   border-color: gray;
 	border-radius: 15px;
-	clear:both;
+	clear:both;*/
 }
-#footer {
-}
-#spectrogramWindow {
-	
-}
-
-#toneWindow {
-	
+iframe {
+	-webkit-filter: grayscale(100%);
+	position:absolute;
+	z-index:-1;
 }

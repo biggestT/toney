@@ -27,7 +27,7 @@ var app = app || {};
 			this._analyser.disconnectMicrophone();
 		},
 		update: function () {
-			this._analyser.trigger('microphone:updated', this._analyser._data);
+			this._analyser.trigger('microphone:updated', this._analyser._spectrogram);
 		}
 	});
 
@@ -45,7 +45,7 @@ var app = app || {};
 			this._analyser.disconnectSoundfile();
 		},
 		update: function () {
-			this._analyser.trigger('soundfile:updated', this._analyser._data);
+			this._analyser.trigger('soundfile:updated', this._analyser._spectrogram);
 		}
 	});
 
@@ -77,6 +77,7 @@ var app = app || {};
 
 		defaults: {
 			fftSize: 2048,
+			spectrogramSize: 300,
 			smoothing: 0.0,
 			bandpass: {
 				fMin: 160,
@@ -195,6 +196,7 @@ var app = app || {};
 			analyser.fftSize = this.get('fftSize');
 			analyser.smoothingTimeConstant = this.smoothing;
 			this._data = new Uint8Array(analyser.frequencyBinCount);
+			this._spectrogram = new Uint8Array(this.get('spectrogramSize'));
 			return analyser;
 		},
 		startSoundAnalysis: function() {
@@ -210,6 +212,7 @@ var app = app || {};
 		},
 		updateSpectrogram: function () {
 			this._analysisOutputNode.getByteFrequencyData(this._data);
+			this._spectrogram = this._data.subarray(0, this.get('spectrogramSize')-1);
 			this.get('currState').update();
 			this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
 		},
@@ -272,7 +275,7 @@ var app = app || {};
 
 		initializeAudioGraph: function() {
 
-			var  lpF, hpF, fftSize, fmin, fmax, q, bp, dComp;
+			var  fftSize, fmin, fmax, q, bp;
 
 			fftSize = this.get('fftSize');
 			bp = this.get('bandpass');
@@ -285,32 +288,48 @@ var app = app || {};
 
 			this._analysisInputNode = audioContext.createGainNode();
 
+			var audioNodes = this.get('audioNodes');
+
 			// Low-pass filter. 
-			lpF = audioContext.createBiquadFilter();
+			var lpF = audioContext.createBiquadFilter();
 			lpF.type = lpF.LOWPASS; 
 			lpF.frequency.value = fmax;
 			lpF.Q = q;
 
 			// High-pass filter. 
-			hpF = audioContext.createBiquadFilter();
+			var hpF = audioContext.createBiquadFilter();
 			hpF.type = hpF.HIGHPASS; 
 			hpF.frequency.value = fmin;
 			hpF.Q = q;
 
+			// Notch filter. 
+			var pF = audioContext.createBiquadFilter();
+			pF.type = hpF.PEAKING; 
+			pF.frequency.value = 750;
+			pF.Q = 0.16;
+			pF.gain = 4.3;
+
+
 			// Dynamic compressor node
-			dComp = audioContext.createDynamicsCompressor();
+			var dComp = audioContext.createDynamicsCompressor();
+			dComp.threshold = -12;
+			
+			audioNodes.push(lpF);
+			audioNodes.push(hpF);
+			audioNodes.push(pF);
+			audioNodes.push(dComp);
+
+			console.log(audioNodes);
 
 			// Connect all of the nodes
-			this._analysisInputNode.connect(lpF);
-			lpF.connect(hpF);
-			hpF.connect(dComp);
-			dComp.connect(this._analysisOutputNode);
+			this._analysisInputNode.connect(audioNodes[0]);
+			for (var i = 0; i < audioNodes.length-1; i++) {
+				audioNodes[i].connect(audioNodes[i+1]);
+			};
+			audioNodes[audioNodes.length-1].connect(this._analysisOutputNode);
 			this._analysisOutputNode.connect(audioContext.destination);
 
-			var audioNodes = this.get('audioNodes');
-			audioNodes.lPass = lpF;
-			audioNodes.hPass = hpF;
-			audioNodes.dComp = dComp;
+			
 
 			this.trigger('audiograph:ready');
 		},

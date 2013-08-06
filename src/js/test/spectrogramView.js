@@ -59,10 +59,16 @@ var app = app || {};
 			var xScale = c.width/l;
 			var dy = -c.height/h;
 
+			var sumXY = 0;
+			var sumY = 0;
+
 			var xStart = index*xScale;
 			var yStart = c.height;
 			for (var i = 0; i < spec.length; i++) {
 				
+				sumXY += spec[i]*i;
+				sumY += spec[i];
+
 				ctx.clearRect(xStart,yStart,xScale,dy);
 
 				ctx.fillStyle = color + spec[i]/255*4 + ')';
@@ -70,6 +76,13 @@ var app = app || {};
 				
 				yStart += dy;
 			}
+			var centerOfMass = Math.round(sumXY/sumY);
+			console.log(centerOfMass);
+
+			ctx.fillStyle =  'rgb(0, 0, 255)';
+			ctx.fillRect(index*xScale, c.height+centerOfMass*dy, xScale, dy);
+
+
 		}
 	});
 })();

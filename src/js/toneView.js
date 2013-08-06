@@ -16,11 +16,10 @@ var app = app || {};
 			
 			this.ctx = app.game.ctx;
 			
-			this.xLength = 50;
 			this.drawingColor = this.options.color;
 			this.lines = [];
 			this.listenTo(this.model, "tonelineChange", this.update);
-			this.listenTo(this.model, "tonelineReset", this.clearCanvas);
+			// this.listenTo(this.model, "tonelineReset", this.clearCanvas);
 
 		},
 		draw: function () {
@@ -28,14 +27,17 @@ var app = app || {};
 			this.drawGradientLine();
 		},
 		drawToneline: function (line) {
-			var N = line.getLineLength();
-			var amplitude = line.getLineAmplitude();
 			var ctx = this.ctx;
 			var c = ctx.canvas;
-			var l = this.xLength;
+			var N = app.game.get('maxLength');
+			var A = app.game.get('maxAmplitude');
+			var lineSize = line.getSize();
+			var n = lineSize[0];
+			var a = lineSize[1];
 			var colors = this.drawingColor;
-			var xScale = c.width/l;
-			var grad = ctx.createLinearGradient(0, 0, N*xScale, c.height);
+			var xScale = c.width/N;
+			var yScale = c.height/A;
+			var grad = ctx.createLinearGradient(0, 0, n*xScale, c.height);
 			grad.addColorStop(0, colors[0]);
 			grad.addColorStop(1, colors[1]);
 
@@ -43,15 +45,15 @@ var app = app || {};
 			ctx.strokeStyle = grad;
 			ctx.lineCap="round";
 
-			var xStart = c.width/2-N/2*xScale;
-			var yStart = c.height/2+amplitude*c.height/2;
-			// console.log(amplitude + ' ' + lines[0][0] + ' ' + lines[0][1] + typeof lines[0][0]);
+			var xStart = c.width/2-n/2*xScale;
+			var yStart = c.height/2+a/2*yScale;
+			console.log(yScale + ' ' + a);
 			var segments = line.segments;
 			for (var i in segments) {
 
 				var k = segments[i].k;
 				var n = segments[i].n;
-				var dy = -k*c.height;
+				var dy = -k*yScale;
 				var dx = n*xScale;
 				var start = [0, 0];
 				var stop = [dx, dy];

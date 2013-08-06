@@ -10,7 +10,9 @@ var app = app || {};
 
 		defaults: {
 			player: null,
-			reference: null
+			reference: null,
+			maxLength: 50,
+			maxAmplitude: 5
 		},
 
 		initialize: function () {
@@ -33,6 +35,12 @@ var app = app || {};
 			// SUBSCRIBE TO TONELINE UPDATES
 			this.listenTo(this.get('reference'), 'tonelineChange' , this.update);
 			this.listenTo(this.get('player'), 'tonelineChange' , this.update);
+			// this.listenTo(this.get('reference'), 'tonelineReset' , this.getAverage);
+			// this.listenTo(this.get('player'), 'tonelineReset' , this.getAverage);
+
+			this._avg = 0;
+			this._sum = 0;
+			this._numOfLines = 0;
 
 			this.initializeArrays();
 
@@ -44,6 +52,11 @@ var app = app || {};
 		},
 		update: function () {
 			
+		},
+		getAverage: function (line) {
+			this._sum += line.getLineAmplitude();
+			this._numOfLines++;
+			this._avg = this._sum/this._numOfLines;
 		}
 	});
 		

@@ -37,7 +37,7 @@ var app = app || {};
 			s2 += data[i] * data[i];
 		}
 		// var variance = (s2 - (s*s) / n) / n;
-		var tone = max/m;
+		var tone = max;
 		// have to pass threshold variance to not be noise
 		// if ( variance > varThreshold ) {
 				return tone;
@@ -105,14 +105,11 @@ var app = app || {};
 		}
 	}
 	Line.prototype.getLineAmplitude = function () {
-		var max = 0;
+		var aSum = 0;
 		for (var i in this.segments) {
-			var k = Math.abs(this.segments.k);
-			if (k > max) {
-				max = k;
-			}
+			aSum += this.segments[i].k*this.segments[i].n;
 		}
-		return max;
+		return aSum;
 	}
 	Line.prototype.getLineLength = function () {
 		var n = 0;
@@ -120,6 +117,16 @@ var app = app || {};
 			n += this.segments[i].n;
 		}
 		return n;
+	}
+	Line.prototype.getSize = function () {
+		var nSum = 0;
+		var kSum = 0;
+		for (var i in this.segments) {
+			nSum += this.segments[i].n;
+			kSum += this.segments[i].k*this.segments[i].n;
+		}
+		kSum /= nSum;
+		return [nSum, kSum];
 	}
 	Line.prototype.addSegment = function (segment) {
 		this.segments.push(segment);
@@ -138,13 +145,11 @@ var app = app || {};
 
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
-			varThreshold: 3,
-			maxAmplitude: 0.05
 		},
 
 		initialize: function () {
 
-			// SUBSCRIBE TO THE SPECTROGRAM MODEL PASSED TO THE TONELINE AT CREATION
+			// SUBSCRIBE TO THE SINGLE SPECTROGRAM MODEL 
 			this.listenTo(app.spectrogram, this.get('watch') , this.update);
 
 			this._tones = [];
@@ -161,17 +166,16 @@ var app = app || {};
 			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'));
 
 			// only update line if considered being the same speech sample
-			if (this._silenceCount < 20) {
+			if (this._silenceCount < 50) {
 				if (currPitch > 0) {
 					this._tones.push(currPitch);
 					var segment = getLinearApproximation(this._tones);
-					segment.k = segment.k/this.get('maxAmplitude'); // normalise to dynamic range
 
 					if ( !isNaN(segment.k) && !isNaN(segment.n) ) { 
 
 						// DETECT NEED FOR SEGMENTED REGRESSION ANALYSIS 
 						var signChange = segment.k*this._prevK;
-						if (signChange < -0.0002 && segment.n > 5) { // only start plotting new line if the flip is great enough and the line long enough
+						if (signChange < -0.0002 && segment.n > 3) { // only start plotting new line if the flip is great enough and the line long enough
 							console.log(signChange);
 							this._line.addSegment(segment);
 							this._tones.length = 0;
@@ -181,7 +185,7 @@ var app = app || {};
 						}
 
 						this._prevK = segment.k;
-						console.log(this._line);
+						// console.log(this._line);
 						this.trigger('tonelineChange', this._line);
 					}
 				} 
@@ -192,10 +196,10 @@ var app = app || {};
 			}
 			// Reset data for the current input to prepare for the next speech sample
 			else {
+				// this.trigger('tonelineReset', this._line);
 				this._tones.length = 0;
 				this._line.resetLine();
 				this._silenceCount = 0;
-				// this.trigger('tonelineReset');
 			}
 			
 		}

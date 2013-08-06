@@ -294,31 +294,31 @@ var app = app || {};
 			var lpF = audioContext.createBiquadFilter();
 			lpF.type = lpF.LOWPASS; 
 			lpF.frequency.value = fmax;
-			lpF.Q = q;
+			lpF.Q.value = q;
 
 			// High-pass filter. 
 			var hpF = audioContext.createBiquadFilter();
 			hpF.type = hpF.HIGHPASS; 
 			hpF.frequency.value = fmin;
-			hpF.Q = q;
+			hpF.Q.value = q;
 
 			// Notch filter. 
 			var pF = audioContext.createBiquadFilter();
 			pF.type = hpF.PEAKING; 
 			pF.frequency.value = 750;
-			pF.Q = 0.16;
-			pF.gain = 4.3;
-
+			pF.Q.value = 0.16;
+			pF.gain.value = -4.0;
+			console.log(pF.gain);
 
 			// Dynamic compressor node
 			var dComp = audioContext.createDynamicsCompressor();
-			dComp.threshold = -10;
-			dComp.release = 0.60;
+			dComp.threshold.value = -10;
+			dComp.release.value = 0.60;
 			
 			audioNodes.push(lpF);
 			audioNodes.push(hpF);
 			audioNodes.push(pF);
-			audioNodes.push(dComp);
+			// audioNodes.push(dComp);
 
 			console.log(audioNodes);
 
@@ -329,8 +329,6 @@ var app = app || {};
 			};
 			audioNodes[audioNodes.length-1].connect(this._analysisOutputNode);
 			this._analysisOutputNode.connect(audioContext.destination);
-
-			
 
 			this.trigger('audiograph:ready');
 		},

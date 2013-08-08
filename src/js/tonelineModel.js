@@ -167,6 +167,9 @@ var app = app || {};
 
 			// only update line if considered being the same speech sample
 			if (this._silenceCount < 50) {
+				if ( !this._line.segments ) {
+					
+				}
 				if (currPitch > 0) {
 					this._tones.push(currPitch);
 					var segment = getLinearApproximation(this._tones);
@@ -196,7 +199,7 @@ var app = app || {};
 			}
 			// Reset data for the current input to prepare for the next speech sample
 			else {
-				// this.trigger('tonelineReset', this._line);
+				this.trigger('tonelineReset', this._line);
 				this._tones.length = 0;
 				this._line.resetLine();
 				this._silenceCount = 0;

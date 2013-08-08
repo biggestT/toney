@@ -76,6 +76,7 @@ var app = app || {};
 				
 				yStart += dy;
 			}
+			console.log(spec.length);
 			var centerOfMass = Math.round(sumXY/sumY);
 			console.log(centerOfMass);
 

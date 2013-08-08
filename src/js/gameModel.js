@@ -32,26 +32,10 @@ var app = app || {};
 				})
 			});
 
-			// SUBSCRIBE TO TONELINE UPDATES
-			this.listenTo(this.get('reference'), 'tonelineChange' , this.update);
-			this.listenTo(this.get('player'), 'tonelineChange' , this.update);
-			// this.listenTo(this.get('reference'), 'tonelineReset' , this.getAverage);
-			// this.listenTo(this.get('player'), 'tonelineReset' , this.getAverage);
-
-			this._avg = 0;
-			this._sum = 0;
-			this._numOfLines = 0;
-
-			this.initializeArrays();
-
-		},
-		initializeArrays: function () {
-			this._tones = [];
-			this._line = [];
-			this._spectrum = [];
+		
 		},
 		update: function () {
-			
+			this.trigger('renderGame');
 		},
 		getAverage: function (line) {
 			this._sum += line.getLineAmplitude();

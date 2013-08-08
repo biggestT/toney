@@ -27,7 +27,7 @@ var app = app || {};
 			this._analyser.disconnectMicrophone();
 		},
 		update: function () {
-			this._analyser.trigger('microphone:updated', this._analyser._spectrogram);
+			this._analyser.trigger('microphone:updated', this._analyser._highpassSpectrogram);
 		}
 	});
 
@@ -45,7 +45,8 @@ var app = app || {};
 			this._analyser.disconnectSoundfile();
 		},
 		update: function () {
-			this._analyser.trigger('soundfile:updated', this._analyser._spectrogram);
+			this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
+			// this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
 		}
 	});
 
@@ -213,8 +214,32 @@ var app = app || {};
 		updateSpectrogram: function () {
 			this._analysisOutputNode.getByteFrequencyData(this._data);
 			this._spectrogram = this._data.subarray(0, this.get('spectrogramSize')-1);
+			this.updateHighpassSpectrogram();
 			this.get('currState').update();
 			this._animationID = window.requestAnimationFrame(this.updateSpectrogram.bind(this));
+		},
+		updateHighpassSpectrogram: function () {
+			var sum, filter, i, h, shift;
+
+			filter = [-1, 3, -1];
+			shift = Math.floor(filter.length/2);
+			this._highpassSpectrogram = [];
+
+			for (i = 0; i < this._spectrogram.length; i++) {
+				if (i > shift && i < this._spectrogram.length - shift) {
+					sum = 0;
+					for (h = 0; h < filter.length; h++) {
+						sum += filter[h]*this._spectrogram[i+h-shift];
+					};
+					sum /= filter.length;
+					sum = Math.min(Math.max(sum, 0), 128);
+					this._highpassSpectrogram[i] = sum;
+				}
+				else {
+					this._highpassSpectrogram[i] = this._spectrogram[i];
+				}
+				
+			};
 		},
 		updateSpectrogramDSP: function () {
 			if (this.get('playing')) {

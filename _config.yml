@@ -71,9 +71,9 @@ JB :
   archive_path: /archive.html
   categories_path : /categories.html
   about_path: /about.html
-  devdemo_path: build/index.html
+  devdemo_path: /build/index.html
   codemap_path: /codemap.html
-  videoapp_path: videoapp/index.html
+  videoapp_path: /videoapp/index.html
   tags_path : /tags.html
   atom_path : /atom.xml
   rss_path : /rss.xml

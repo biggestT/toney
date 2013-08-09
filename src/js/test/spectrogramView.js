@@ -76,9 +76,7 @@ var app = app || {};
 				
 				yStart += dy;
 			}
-			console.log(spec.length);
 			var centerOfMass = Math.round(sumXY/sumY);
-			console.log(centerOfMass);
 
 			ctx.fillStyle =  'rgb(0, 0, 255)';
 			ctx.fillRect(index*xScale, c.height+centerOfMass*dy, xScale, dy);

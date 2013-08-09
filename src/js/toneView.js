@@ -6,6 +6,15 @@ var app = app || {};
 
 (function () {
 
+	var clone = function (obj) {
+		var target = {};
+		for (var i in obj) {
+			if (obj.hasOwnProperty(i)) {
+				target[i] = obj[i];
+			}
+		}
+		return target;
+	};
 
 	app.TonelineView = Backbone.View.extend({
 		
@@ -34,7 +43,7 @@ var app = app || {};
 				var colors = this.drawingColor;
 				var xScale = c.width/N;
 				var yScale = c.height/A;
-				var grad = ctx.createLinearGradient(0, 0, n*xScale, c.height);
+				var grad = ctx.createLinearGradient(0, 0, n*xScale, 0);
 				grad.addColorStop(0, colors[0]);
 				grad.addColorStop(1, colors[1]);
 
@@ -44,7 +53,6 @@ var app = app || {};
 
 				var xStart = c.width/2-n/2*xScale;
 				var yStart = c.height/2+a/2*yScale;
-				console.log(yScale + ' ' + a);
 				var segments = line.segments;
 				for (var i in segments) {
 
@@ -66,9 +74,11 @@ var app = app || {};
 					xStart += dx;
 				}
 			}
+
+
 		},
 		update: function(line) {
-			this.line = line;
+			this.line = line.clone();
 		}
 	});
 })();

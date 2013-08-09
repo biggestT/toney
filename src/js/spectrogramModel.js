@@ -221,7 +221,9 @@ var app = app || {};
 		updateHighpassSpectrogram: function () {
 			var sum, filter, i, h, shift;
 
-			filter = [-1, 3, -1];
+			// filter = [-1, 3, -1];
+			// filter = [ 1];
+			filter = [-1, -1, 5, -1, -1];
 			shift = Math.floor(filter.length/2);
 			this._highpassSpectrogram = [];
 
@@ -332,7 +334,7 @@ var app = app || {};
 			pF.type = hpF.PEAKING; 
 			pF.frequency.value = 750;
 			pF.Q.value = 0.16;
-			pF.gain.value = -4.0;
+			pF.gain.value = 3.2;
 			console.log(pF.gain);
 
 			// Dynamic compressor node

@@ -6,7 +6,7 @@ var app = app || {};
 	// HPS ALGORITHM FOR PITCH DETECTION
 	// ------------------
 
-	var getPitchHPS = function (data, spectrum, iterations) {
+	var getPitchHPS = function (data, spectrum, iterations, varThreshold) {
 
 		var n = data.length;
 		var m = Math.floor(n/iterations);
@@ -36,14 +36,15 @@ var app = app || {};
 			s += data[i];
 			s2 += data[i] * data[i];
 		}
-		// var variance = (s2 - (s*s) / n) / n;
+		var variance = (s2 - (s*s) / n) / n;
+		// console.log(variance);
 		var tone = max;
 		// have to pass threshold variance to not be noise
-		// if ( variance > varThreshold ) {
+		if ( variance > varThreshold ) {
 				return tone;
-		// } else {
-			// return -1;
-		// }
+		} else {
+			return -1;
+		}
 
 	};
 
@@ -96,6 +97,11 @@ var app = app || {};
 	Line.prototype.resetLine = function () {
 		this.segments.length = 0;
 	}
+	Line.prototype.clone = function () {
+		var copy = new Line();
+		copy.segments = this.segments.slice();
+		return copy;
+	}
 	Line.prototype.updateSegment = function (segment) {
 		if ( this.segments.length > 0 ) {
 			this.segments[this.segments.length-1] = segment;
@@ -145,12 +151,14 @@ var app = app || {};
 
 		defaults: {
 			iterations: 8, // downsampling steps of the HPS-algorithm
+			varThreshold: 0.05
 		},
 
 		initialize: function () {
 
 			// SUBSCRIBE TO THE SINGLE SPECTROGRAM MODEL 
 			this.listenTo(app.spectrogram, this.get('watch') , this.update);
+			this.listenTo(app.spectrogram, 'sourceChanged' , this.resetToneline);
 
 			this._tones = [];
 			this._line = new Line();
@@ -163,13 +171,10 @@ var app = app || {};
 
 		update: function (spectrogram) {
 			this._spectrum.length = 0;
-			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'));
+			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'), this.get('varThreshold'));
 
 			// only update line if considered being the same speech sample
-			if (this._silenceCount < 50) {
-				if ( !this._line.segments ) {
-					
-				}
+			if (this._silenceCount < 30) {
 				if (currPitch > 0) {
 					this._tones.push(currPitch);
 					var segment = getLinearApproximation(this._tones);
@@ -199,12 +204,18 @@ var app = app || {};
 			}
 			// Reset data for the current input to prepare for the next speech sample
 			else {
-				this.trigger('tonelineReset', this._line);
-				this._tones.length = 0;
-				this._line.resetLine();
-				this._silenceCount = 0;
+				this.resetToneline();
 			}
 			
+		},
+		resetToneline: function()  {
+			if (this._line.segments.length != 0) {
+				// this.trigger('tonelineChange', this._line);
+				this.trigger('tonelineReset', this._line);
+			}
+			this._tones.length = 0;
+			this._line.resetLine();
+			this._silenceCount = 0;
 		}
 	});
 })();

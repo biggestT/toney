@@ -26,13 +26,19 @@ var app = app || {};
 				color: ['#0BB400', '#2EFE3E']
 			});
 
+			this.score = new app.ScoreView();
+
 			this.listenTo(app.game.get('reference'), 'tonelineChange', this.render);
 			this.listenTo(app.game.get('player'), 'tonelineChange', this.render);
+			this.listenTo(app.game, 'game:newScore', this.drawScore);
 		},
 		render: function () {
 			this.clearCanvas();
 			this.reference.draw();
 			this.player.draw();
+		},
+		drawScore: function (score) {
+			this.score.draw(score);
 		},
 		clearCanvas: function() {
 			var ctx = this.ctx;

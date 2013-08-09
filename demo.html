@@ -6,27 +6,22 @@ tagline: Continuously updated demo
 {% include JB/setup %}
 
 <section id="toneyApp">
-		<footer id="footer"></footer>
-		<input type="button" id="playPause" ></button>
-		<section id="main">
-			<canvas id="toneWindow" width="400px" height="150px"></canvas>
-			<canvas id="spectrogramWindow" width="400px" height="150px"></canvas>
-		</section>
+		<!-- FILLED DURING APP INITIALIZATION -->
 </section>
-<image id="processingImage" src="{{ BASE_PATH }}/assets/demo/images/processing.gif"></image>
 
-<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/underscore-min.js"></script>
-<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/jquery-1.10.2.min.js"></script>
-<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/lib-min/backbone-min.js"></script>
-<script type="text/javascript" src="{{ BASE_PATH }}/assets/demo/js/toney.min.js"></script>
 
-<script>
-  var app = app || {};
-  'use strict';
-  // Kick off everyting!
-	$(function() {
-		new app.AppView();
-	});
-</script>
+  <script type="text/javascript" src="js/lib-min/underscore-min.js"></script>
+	<script type="text/javascript" src="js/lib-min/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="js/lib-min/backbone-min.js"></script>
+	<script type="text/javascript" src="js/toney.min.js"></script>
+  
+  <script>
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.AppView();
+		});
+	</script>
 
 {% include JB/comments %}

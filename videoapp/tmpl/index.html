@@ -1,0 +1,53 @@
+<section id="toneyApp">
+		<!-- FILLED DURING APP INITIALIZATION -->
+</section>
+
+
+
+<!-- @if NODE_ENV == 'PRODUCTION' -->
+	
+  <script type="text/javascript" src="js/lib-min/underscore-min.js"></script>
+	<script type="text/javascript" src="js/lib-min/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="js/lib-min/backbone-min.js"></script>
+	<script type="text/javascript" src="js/toney.min.js"></script>
+  
+  <script>
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.AppView();
+		});
+	</script>
+
+<!-- @endif -->
+
+<!-- @if NODE_ENV == 'DEVELOPMENT' -->
+<link type="text/css"href="css/test/testToney.css"  rel="stylesheet" >
+
+	<script type="text/javascript" src="js/lib/underscore.js"></script>
+	<script type="text/javascript" src="js/lib/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="js/lib/backbone.js"></script>
+	<script type="text/javascript" src="js/lib/dspMod.js"></script>
+
+  <script type="text/javascript" src="js/spectrogramModel.js"></script> 
+  <script type="text/javascript" src="js/tonelineModel.js"></script> 
+  <script type="text/javascript" src="js/gameModel.js"></script> 
+  <script type="text/javascript" src="js/gameView.js"></script> 
+  <script type="text/javascript" src="js/toneView.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+  
+  <script type="text/javascript" src="js/test/testView.js"></script> 
+  <script type="text/javascript" src="js/test/spectrogramView.js"></script> 
+  <script type="text/javascript" src="js/test/sliderViewController.js"></script> 
+  <script type="text/javascript" src="js/test/testApp.js"></script>
+
+  <script>
+	  var app = app || {};
+	  'use strict';
+	  // Kick off everyting!
+		$(function() {
+			new app.TestAppView();
+		});
+	</script>
+<!-- @endif -->

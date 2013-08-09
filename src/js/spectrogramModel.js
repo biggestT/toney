@@ -232,7 +232,7 @@ var app = app || {};
 					sum = 0;
 					for (h = 0; h < filter.length; h++) {
 						sum += filter[h]*this._spectrogram[i+h-shift];
-					};
+					}
 					sum /= filter.length;
 					sum = Math.min(Math.max(sum, 0), 128);
 					this._highpassSpectrogram[i] = sum;
@@ -241,7 +241,7 @@ var app = app || {};
 					this._highpassSpectrogram[i] = this._spectrogram[i];
 				}
 				
-			};
+			}
 		},
 		updateSpectrogramDSP: function () {
 			if (this.get('playing')) {
@@ -353,7 +353,7 @@ var app = app || {};
 			this._analysisInputNode.connect(audioNodes[0]);
 			for (var i = 0; i < audioNodes.length-1; i++) {
 				audioNodes[i].connect(audioNodes[i+1]);
-			};
+			}
 			audioNodes[audioNodes.length-1].connect(this._analysisOutputNode);
 			this._analysisOutputNode.connect(audioContext.destination);
 

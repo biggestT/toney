@@ -47,7 +47,7 @@ var app = app || {};
 			this._avg = this._sum/this._numOfLines;
 		},
 		getPlayerScore: function (line) {
-			if (this._referenceLine != null) {
+			if (this._referenceLine !== null) {
 
 				var playerSize = line.getSize();
 				var referenceSize = this._referenceLine.getSize();
@@ -60,8 +60,8 @@ var app = app || {};
 				var xDiff = Math.abs(playerSize[0]-referenceSize[0]);
 				var yDiff = Math.abs(playerSize[1]-referenceSize[1]);
 
-				var xScore = (longest == 0) ? ratio * 1 : ratio * (1-xDiff/longest);
-				var yScore = (highest == 0) ? (1-ratio) * 1 : (1-ratio) * (1-yDiff/highest) ;
+				var xScore = (longest === 0) ? ratio * 1 : ratio * (1-xDiff/longest);
+				var yScore = (highest === 0) ? (1-ratio) * 1 : (1-ratio) * (1-yDiff/highest) ;
 
 				var starScore = Math.round(Math.min(xScore+yScore,1)*this.get('maxStars'));
 

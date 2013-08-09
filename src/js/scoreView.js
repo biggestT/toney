@@ -37,7 +37,6 @@ var app = app || {};
 
 			var dx = s+m;
 
-			
 			for (var i = 0; i < n; i++) {
 				this.drawStar(ctx, xStart, yStart, s, 5, 0.5, true);			
 				xStart += dx;
@@ -45,11 +44,8 @@ var app = app || {};
 			for (i = n; i < N; i++) {
 				this.drawStar(ctx, xStart, yStart, s, 5, 0.5, false);
 				xStart += dx;	
-			};
-			
-
-			
-
+			}
+		
 		},
 
 		// Starpower credits to Programming Thomas! 

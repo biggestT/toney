@@ -91,17 +91,17 @@ var app = app || {};
 	// CLASS REPRESENTING ONE WHOLE TONELINE
 	// -----------------------------------
 
-	function Line() {
+	var Line = function () {
 		this.segments = [];
-	}
+	};
 	Line.prototype.resetLine = function () {
 		this.segments.length = 0;
-	}
+	};
 	Line.prototype.clone = function () {
 		var copy = new Line();
 		copy.segments = this.segments.slice();
 		return copy;
-	}
+	};
 	Line.prototype.updateSegment = function (segment) {
 		if ( this.segments.length > 0 ) {
 			this.segments[this.segments.length-1] = segment;
@@ -109,21 +109,21 @@ var app = app || {};
 		else {
 			this.segments[0] = segment;
 		}
-	}
+	};
 	Line.prototype.getLineAmplitude = function () {
 		var aSum = 0;
 		for (var i in this.segments) {
 			aSum += this.segments[i].k*this.segments[i].n;
 		}
 		return aSum;
-	}
+	};
 	Line.prototype.getLineLength = function () {
 		var n = 0;
 		for (var i in this.segments) {
 			n += this.segments[i].n;
 		}
 		return n;
-	}
+	};
 	Line.prototype.getSize = function () {
 		var nSum = 0;
 		var kSum = 0;
@@ -133,16 +133,16 @@ var app = app || {};
 		}
 		kSum /= nSum;
 		return [nSum, kSum];
-	}
+	};
 	Line.prototype.addSegment = function (segment) {
 		this.segments.push(segment);
-	}
+	};
 
 	// Class representing part of a toneline, i.e one segment
-	function Segment(k,n) {
-		this.k = k, // k value
-		this.n = n  // length of the segment
-	}
+	var Segment = function (k,n) {
+		this.k = k; // k value
+		this.n = n; // length of the segment
+	};
 
 	app.TonelineModel = Backbone.Model.extend({
 
@@ -209,7 +209,7 @@ var app = app || {};
 			
 		},
 		resetToneline: function()  {
-			if (this._line.segments.length != 0) {
+			if (this._line.segments.length !== 0) {
 				// this.trigger('tonelineChange', this._line);
 				this.trigger('tonelineReset', this._line);
 			}

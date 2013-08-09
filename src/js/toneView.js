@@ -57,9 +57,9 @@ var app = app || {};
 				for (var i in segments) {
 
 					var k = segments[i].k;
-					var n = segments[i].n;
+					var x = segments[i].n;
 					var dy = -k*yScale;
-					var dx = n*xScale;
+					var dx = x*xScale;
 					var start = [0, 0];
 					var stop = [dx, dy];
 

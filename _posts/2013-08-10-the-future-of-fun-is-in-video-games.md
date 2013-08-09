@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "The future of fun is in video games"
-tagline: "Practice Chinese with a Youtube tutor and a Toney tone-line"
+tagline: "Practice Chinese with a Youtube tutor and a Toney tone-line?"
 category: 
 tags: [future, forecasting, experiment]
 ---
@@ -21,4 +21,4 @@ But what if there were someone listening to me? Someone who also could tell me i
 
 Prototype experiment go!
 --------------------------
-To get a feel for what this could be like I still put together a [test]({{ HOME_PATH }}{{ site.JB.videoapp_path }}) where you just have to listen to with headphones on so that the tutor's voice doesn't interfer with your own. You can pause and play the video by simply clicking on it. The advantage of having the Youtube audio stream would be that the tutor's tone-line would be plotted in a separate color and with enhanced pitch-detection. This experiment requires Google Chrome with getUserMedia enabled. 
+To get a feel for what this could be like I still put together a [test]({{ BASE_PATH }}{{ site.JB.videoapp_path }}) where you just have to listen to with headphones on so that the tutor's voice doesn't interfer with your own. You can pause and play the video by simply clicking on it. The advantage of having the Youtube audio stream would be that the tutor's tone-line would be plotted in a separate color and with enhanced pitch-detection. This experiment requires Google Chrome with getUserMedia enabled. 

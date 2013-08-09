@@ -29,7 +29,7 @@ So from now on I can enjoy the privilege of becoming frustrated with a game that
 
 {% gist 6193852 gameModel.js %}
 
-If you have getUserMedia enabled in Chrome (the developer version of Firefox just [recently](https://hacks.mozilla.org/2012/07/getusermedia-is-ready-to-roll/) shipped with this feature but only in an experimental version and I don't think Toney is working there atm) you can try the demo on this [site](http://biggestt.github.io/toney/demo.html). Now go get some 非常好 tone-lines!
+If you have getUserMedia enabled in Chrome (the developer version of Firefox just [recently](https://hacks.mozilla.org/2012/07/getusermedia-is-ready-to-roll/) shipped with this feature but only in an experimental version and I don't think Toney is working there atm) you can try the demo on this [site]({{ BASE_PATH }}{{ site.JB.devdemo_path }}). Now go get some 非常好 tone-lines!
 
 
 

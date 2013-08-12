@@ -13,7 +13,8 @@ var app = app || {};
 			reference: null,
 			maxLength: 50,
 			maxAmplitude: 5,
-			maxStars: 3
+			maxStars: 3,
+			soundFX: true
 		},
 
 		initialize: function () {

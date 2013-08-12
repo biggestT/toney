@@ -1,4 +1,5 @@
 var app = app || {};
+var audioContext;
 
 (function () {
 	'use strict';
@@ -65,9 +66,6 @@ var app = app || {};
 		}
 	});
 	
-	// ONLY USE ONE AUDIOCONTEXT
-	var audioContext = null;
-
 	// THE MODEL WHICH OUTPUTS A SPECTROGRAM TO LISTENING VIEWS AND/OR MODELS
 	// -----------------------------------------------------------------------
 
@@ -109,6 +107,7 @@ var app = app || {};
 			}
 
 			audioContext = new AudioContext();
+			
 
 			this._states = {
 					microphone: new MicrophoneState(this),
@@ -125,7 +124,6 @@ var app = app || {};
 
 			this.initializeMicrophone();
 			this.once('microphone:ready', this.initializeSoundfile, this);
-			this.once('soundfile:loaded', this.createSoundFileNode, this);
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
 			this.once('audiograph:ready', this.inputToggle, this);
 				
@@ -156,29 +154,23 @@ var app = app || {};
 		// --------------------------------------
 
 		initializeSoundfile: function () {
-			this._audio = new Audio(this.get('soundfileSource'));
-			this._audio.preload = false;
-			this._audio.addEventListener("canplay", function () {
-				this.trigger('soundfile:loaded');
-			}.bind(this));
-			this._audio.addEventListener("ended", function () {
-				this.trigger('soundfile:ended');
-			}.bind(this));
-			this._audio.autoplay = false;
+			console.log('initializeSoundfile');
+			this._soundfile = new app.Sound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
 		},
-		createSoundFileNode: function () {
-			this._soundFileInput = audioContext.createMediaElementSource(this._audio);
+		createSoundfileNode: function () {
+			console.log('hehe');
+			this._soundFileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());
 			this.trigger('soundfile:ready');
 		},
 		connectSoundfile: function () {
-			this._soundFileInput.connect(this._analysisInputNode);
-			this._soundFileInput.connect(audioContext.destination);
-			this._audio.play();
+			this._soundfileInput.connect(this._analysisInputNode);
+			this._soundfileInput.connect(audioContext.destination);
+			this._soundfile.play();
 			this.set({ playing: true });
 		},
 		disconnectSoundfile: function () {
-			this._soundFileInput.disconnect();
-			this._audio.pause();
+			this._soundfileInput.disconnect();
+			this._soundfile.pause();
 			this.set({ playing: false });
 		},
 		resetSoundfile: function () {

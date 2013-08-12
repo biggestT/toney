@@ -37,11 +37,10 @@ var app = app || {};
 
 			app.game = new app.GameModel();
 			app.game.ctx = this.$gameWindow[0].getContext('2d'); // global context for drawing game related things
-			console.log(app.game.ctx);
 			
-			app.gameView = new app.GameView({
-				game: app.game
-			});
+			app.gameView = new app.GameView();
+
+			app.gameSounds = new app.SoundFX();
 
 			// RE-RENDER THE APP WHEN INPUT CHANGES
 			this.listenTo( app.spectrogram, 'stateChanged', this.render );

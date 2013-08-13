@@ -48,7 +48,7 @@ var app = app || {};
 			this._avg = this._sum/this._numOfLines;
 		},
 		getPlayerScore: function (line) {
-			if (this._referenceLine !== null) {
+			if (typeof this._referenceLine !== 'undefined') {
 
 				var playerSize = line.getSize();
 				var referenceSize = this._referenceLine.getSize();

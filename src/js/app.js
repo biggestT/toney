@@ -44,11 +44,14 @@ var app = app || {};
 
 			// RE-RENDER THE APP WHEN INPUT CHANGES
 			this.listenTo( app.spectrogram, 'stateChanged', this.render );
+			this.listenTo( app.spectrogram, 'change:playing', this.render );
 
 			this.render();
 		},
 		// Re-rendering the App when the spectrogram's state changes
 		render: function () {
+			console.log('rendering app view');
+			
 			if (app.spectrogram.get('processing')) {
 				$(this.el).hide();
 				this.$loadingImage.show();
@@ -59,7 +62,6 @@ var app = app || {};
 				$(this.el).show();
 				this.$loadingImage.hide();
 				if (app.spectrogram.get('playing')) {
-							console.log('rendering');
 					this.$playPauseButton.prop('value', 'Pause');
 					this.$footer.html('listening to the soundfile: </br>' + app.spectrogram.get('soundfileSource') );
 				}

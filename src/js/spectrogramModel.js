@@ -151,34 +151,28 @@ var audioContext;
 		},
 
 		// SOUNDFILE METHODS
-		// --------------------------------------
+		// -----------------
 
 		initializeSoundfile: function () {
 			console.log('initializeSoundfile');
 			this._soundfile = new app.Sound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
+			this.listenTo(this._soundfile, 'change:playing', function () {
+				console.log(this._soundfile.get('playing'));
+				this.set({ playing: this._soundfile.get('playing') });
+			});
 		},
 		createSoundfileNode: function () {
-			console.log('hehe');
-			this._soundFileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());
+			this._soundfileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());
 			this.trigger('soundfile:ready');
 		},
 		connectSoundfile: function () {
 			this._soundfileInput.connect(this._analysisInputNode);
 			this._soundfileInput.connect(audioContext.destination);
 			this._soundfile.play();
-			this.set({ playing: true });
 		},
 		disconnectSoundfile: function () {
 			this._soundfileInput.disconnect();
 			this._soundfile.pause();
-			this.set({ playing: false });
-		},
-		resetSoundfile: function () {
-			// reload audio because setting this._audio.currentTime is not working, 
-			// might be because of currently immature Web Audio API?
-			this.initializeSoundfile();	
-			this.once('soundfile:loaded', this.createSoundFileNode, this);
-			this.once('soundfile:ready', this.inputToggle, this);
 		},
 
 		// ANALYSER METHODS
@@ -252,6 +246,7 @@ var audioContext;
 
 		// Following the example at 
 		// http://phenomnomnominal.github.io/docs/tuner.html
+		// currently not in use
 
 		initializeDSP: function () {
 			var fftSize = this.get('fftSize');

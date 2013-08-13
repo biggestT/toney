@@ -20,9 +20,7 @@ var app = app || {};
 			this.listenTo(app.game, 'game:newScore', this.playStarSound);
 		},
 		playStarSound: function (starScore) {
-			// for (var i in starScore) {
-			// 	this._starSound.play();
-			// }
+			 this._starSound.play(3);
 		},
 	});
 

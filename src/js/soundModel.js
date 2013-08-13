@@ -6,6 +6,10 @@ var app = app || {};
 
 (function () {
 
+	var resetSoundfile = function () {
+		this.currentTime = 0;
+	}
+
 	app.Sound = Backbone.Model.extend({
 		
 		defaults: {
@@ -41,7 +45,7 @@ var app = app || {};
 				
 				// Reset when finished playing 
 
-				this._audio.addEventListener('ended', this.resetSoundfile);
+				this._audio.addEventListener('ended', resetSoundfile.bind(this._audio));
 
 				// Catch audiofile errors and send to the applications event aggregator
 
@@ -55,9 +59,37 @@ var app = app || {};
 
 		},
 		play: function () {
-			// if (this.get('playing') != true) {
+			if (this.get('playing') != true) {
 				this._audio.play();
-			// }
+			}
+			else {
+				var tempAudio = this._audio.cloneNode();
+				tempAudio.play();
+			}
+		},
+		playMultipleTimes: function (numTimes) {
+
+			var playAgain = function () {
+				this.count++;
+				this.currentTime = 0;
+				// play audio again if we still have times left to play
+				if (this.count < numTimes) {
+					this.play();
+				}
+				else {
+					// if audio has played enough times we re-add the ordinary ended-listener
+					this.removeEventListener('ended', playAgain);
+					this.addEventListener('ended', resetSoundfile.bind(this));
+				}
+			};
+
+			// temporarily remove the ordinary ended-listener
+			this._audio.removeEventListener('ended', this.resetSoundfile);
+			this._audio.count = 0;
+			this._audio.addEventListener('ended', playAgain.bind(this._audio), false);
+
+			// kick of everything by start playing one first time
+			this._audio.play();
 		},
 		// play: function (numTimes) {
 		// 	var audio = this._audio.cloneNode();
@@ -77,9 +109,6 @@ var app = app || {};
 		// },
 		pause: function () {
 			this._audio.pause();
-		},
-		resetSoundfile: function () {
-			if (typeof this._audio !== 'undefined') { this._audio.currentTime = 0; }
 		},
 		getAudioElement: function () {
 			return this._audio;

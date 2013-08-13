@@ -23,6 +23,9 @@ var app = app || {};
 			this.$gameWindow[0].width = 560;
 			this.$gameWindow[0].height = 315;
 
+			// The Applications event aggregator
+			// ---------------------------------
+			app.eventAgg = _.extend({}, Backbone.Events);
 
 			this.$el.append( this.$gameWindow , [ this.$footer, this.$playPauseButton   ]);
 			this.$el.parent().append( this.$loadingImage );

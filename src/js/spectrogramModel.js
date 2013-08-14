@@ -47,6 +47,7 @@ var audioContext;
 		},
 		update: function () {
 			this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
+			console.log(this._analyser._soundfile.getAudioElement().currentTime);
 			// this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
 		}
 	});
@@ -83,7 +84,7 @@ var audioContext;
 				fMax: 3400,
 				qFactor: 0.05
 			},
-			soundfileSource: 'audio/ma_short.mp3',
+			soundfileSource: 'audio/ma_short.ogg',
 			currState: null,
 			downsampleRate: 4,
 			playing: false,
@@ -129,7 +130,7 @@ var audioContext;
 				
 			// PERMANENT EVENT BINDINGS
 			// ---------------------------
-			this.on('soundfile:ended', this.resetSoundfile, this);
+			// this.on('soundfile:ended', this.resetSoundfile, this);
 		},
 
 		// MICROPHONE METHODS
@@ -160,6 +161,13 @@ var audioContext;
 				console.log(this._soundfile.get('playing'));
 				this.set({ playing: this._soundfile.get('playing') });
 			});
+			this.listenTo(this._soundfile, 'reset', function () {
+
+				// console.log(this._soundfile.getAudioElement());
+				// this._soundfile = newSoundfile;
+				// this._soundfileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());
+				// this.createSoundfileNode();
+			})
 		},
 		createSoundfileNode: function () {
 			this._soundfileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());

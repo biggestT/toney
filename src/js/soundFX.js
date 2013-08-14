@@ -17,13 +17,16 @@ var app = app || {};
 		initialize: function() {
 
 			this._starSound = new app.Sound(this.get('starPath'));
-			console.log(app.game);
 			this.listenTo(app.eventAgg, 'game:drawingStar', this.playStarSound);
-			this.listenTo(app.eventAgg, 'game:drawingBadStar', this.playStarSound);
+			this.listenTo(app.eventAgg, 'game:drawingBadStar', this.playBadStarSound);
 		},
 		playStarSound: function () {
-			 this._starSound.play();
+			this._starSound.play();
 		},
+		playBadStarSound: function () {
+			// maybe just use the old star sound but with some web audio api-filter to
+			// make it sound more depressing :(
+		}
 	});
 
 })();

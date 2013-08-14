@@ -7,7 +7,8 @@ var app = app || {};
 (function () {
 
 	var resetSoundfile = function () {
-		this.currentTime = 0;
+			this._audio.pause();
+			this._audio.currentTime = 0;
 	}
 
 	app.Sound = Backbone.Model.extend({
@@ -27,7 +28,7 @@ var app = app || {};
 				this.set({ source: src });
 				this._audio = new Audio(src);
 				
-				this._audio.preload = false;
+				this._audio.preload = true;
 				this._audio.autoplay = false;
 
 				// Execute passed callback function when audio can play
@@ -45,16 +46,16 @@ var app = app || {};
 				
 				// Reset when finished playing 
 
-				this._audio.addEventListener('ended', resetSoundfile.bind(this._audio));
+				this._audio.addEventListener('ended', resetSoundfile.bind(this));
 
 				// Catch audiofile errors and send to the applications event aggregator
 
 				this._audio.addEventListener('error', function (err) {
-					this.trigger('error:soundfile', event.srcElement.error);
+					app.eventAgg('error:soundfile', event.srcElement.error);
 				}.bind(this));
 			}
 			catch (err) {
-				this.trigger('error:soundfile', err);
+				app.eventAgg.trigger('error:soundfile', err + src);
 			}
 
 		},
@@ -85,28 +86,13 @@ var app = app || {};
 
 			// temporarily remove the ordinary ended-listener
 			this._audio.removeEventListener('ended', this.resetSoundfile);
+
 			this._audio.count = 0;
 			this._audio.addEventListener('ended', playAgain.bind(this._audio), false);
 
 			// kick of everything by start playing one first time
 			this._audio.play();
 		},
-		// play: function (numTimes) {
-		// 	var audio = this._audio.cloneNode();
-		// 	audio.play();
-		// 	audio.count = 0;
-		// 	audio.addEventListener('canplay', function () {
-		// 		this.currentTime = 0;
-		// 		console.log('can play again');
-		// 		if (this.count < numTimes) {
-		// 			this.play();
-		// 		}
-		// 	})
-		// 	audio.addEventListener('ended', function () {
-		// 		this.count++;
-		// 		console.log('now played: ' + this.count + numTimes);
-		// 	});
-		// },
 		pause: function () {
 			this._audio.pause();
 		},

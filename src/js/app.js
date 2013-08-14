@@ -66,7 +66,7 @@ var app = app || {};
 				this.$loadingImage.hide();
 				if (app.spectrogram.get('playing')) {
 					this.$playPauseButton.prop('value', 'Pause');
-					this.$footer.html('listening to the soundfile: </br>' + app.spectrogram.get('soundfileSource') );
+					this.$footer.html('listening to the soundfile: ' + app.spectrogram.get('soundfileSource') );
 				}
 				else {
 					this.$playPauseButton.prop('value', 'Play');

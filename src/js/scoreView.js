@@ -64,20 +64,25 @@ var app = app || {};
 
 			var dx = s+m;
 
-			for (var i = 0; i < n; i++) {
-				window.setTimeout(function () {
-					drawStar(ctx, xStart, yStart, s, 5, 0.5, true);
-					xStart += dx;
-					app.eventAgg.trigger('game:drawingStar');
-				}, dt*i);			
+			// Recursively draw stars with a certain delay in between each
+			var current = 0;
 
-			}
-			for (i = n; i < N; i++) {
-				window.setTimeout( function () {
-					drawStar(ctx, xStart, yStart, s, 5, 0.5, false);
-					app.eventAgg.trigger('game:drawingBadStar');
-					xStart += dx;	
-				}, dt*i);
+			setTimeout(drawNextStar, dt);
+
+			function drawNextStar() {
+
+				if (current >= N) {
+					app.eventAgg.trigger('game:doneDrawingStars');
+					return;
+				}
+
+				var filled = (current < starScore ) ? true : false;
+				drawStar(ctx, xStart, yStart, s, 5, 0.5, filled);
+				if (filled) { app.eventAgg.trigger('game:drawingStar'); }
+				current++;
+				xStart += dx;
+
+			  setTimeout(drawNextStar, dt);
 			}
 		
 		},

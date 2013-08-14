@@ -14,7 +14,8 @@ var app = app || {};
 			maxLength: 50,
 			maxAmplitude: 5,
 			maxStars: 3,
-			soundFX: true
+			soundFX: true,
+			processing: false
 		},
 
 		initialize: function () {

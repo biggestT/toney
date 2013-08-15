@@ -1,0 +1,43 @@
+@font-face {
+  font-family: 'asian';
+  src: url('font/Shojumaru-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  text-align: center;
+}
+
+body {
+	-webkit-filter: saturate(0.9) sepia(0.05);
+	background-color: white-smoke;
+	text-transform: uppercase;
+	font-family: 'asian';
+}
+
+.scoreboard {
+	text-align: center;
+}
+.icon-star {
+	color: transparent;
+	font-size: 7vw;
+	margin: 0 1.1vw;
+}
+#gamewindow {
+	position: absolute;
+	z-index: -1
+}
+
+.controls {
+	height: 70%;
+}
+input {
+	font-family: 'asian';
+	position: relative;
+	display: block;
+	font-size: 5vw;
+	width: 20vw;
+	padding: 2vw;
+	background-color: transparent;
+	border: none;
+	margin: 0 auto;
+	color: #2EFE3E;
+}

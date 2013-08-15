@@ -28,7 +28,7 @@ var audioContext;
 			this._analyser.disconnectMicrophone();
 		},
 		update: function () {
-			this._analyser.trigger('microphone:updated', this._analyser._highpassSpectrogram);
+			app.eventAgg.trigger('microphone:updated', this._analyser._highpassSpectrogram);
 		}
 	});
 
@@ -46,7 +46,7 @@ var audioContext;
 			this._analyser.disconnectSoundfile();
 		},
 		update: function () {
-			this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
+			app.eventAgg.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
 			console.log(this._analyser._soundfile.getAudioElement().currentTime);
 			// this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
 		}
@@ -123,14 +123,18 @@ var audioContext;
 			this._analysisOutputNode = (this.get('externalAnalyser')) ? this.initializeDSP() // External DSP.js analysis 
 			: this.initializeAnalyser(); // Web Audio API:s built  in
 
+			// EVENT CHAIN FOR INITIAL SETUP
 			this.initializeMicrophone();
 			this.once('microphone:ready', this.initializeSoundfile, this);
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
-			this.once('audiograph:ready', this.inputToggle, this);
-				
-			// PERMANENT EVENT BINDINGS
-			// ---------------------------
-			// this.on('soundfile:ended', this.resetSoundfile, this);
+			this.once('audiograph:ready', function () {
+				this.inputToggle();
+				app.eventAgg.trigger('spectrogram:ready'); // Tell the application that the spectrogram is ready
+			}.bind(this));
+
+			console.log(this.get('playing'));
+			this.listenTo(app.eventAgg, 'controls:playPause', this.inputToggle);
+			this.listenTo(app.eventAgg, 'reference:reset', this.inputToggle);
 		},
 
 		// MICROPHONE METHODS
@@ -158,8 +162,11 @@ var audioContext;
 			console.log('initializeSoundfile');
 			this._soundfile = new app.Sound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
 			this.listenTo(this._soundfile, 'change:playing', function () {
-				console.log(this._soundfile.get('playing'));
-				this.set({ playing: this._soundfile.get('playing') });
+
+				var isPlaying = this._soundfile.get('playing');
+
+				app.eventAgg.trigger('reference:playPause');
+				this.set({ playing: isPlaying });
 			});
 			this.listenTo(this._soundfile, 'reset', function () {
 
@@ -365,7 +372,9 @@ var audioContext;
 			else {
 				this.changeState(this._states.soundfile);
 			}
-			this.trigger('sourceChanged');
+			app.eventAgg.trigger('spectrogram:sourceChange');
+			console.log(this.get('playing'));
+
 		},
 
 		// STATE PATTERN UTILITY

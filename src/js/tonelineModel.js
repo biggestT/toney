@@ -157,8 +157,8 @@ var app = app || {};
 		initialize: function () {
 
 			// SUBSCRIBE TO THE SINGLE SPECTROGRAM MODEL 
-			this.listenTo(app.spectrogram, this.get('watch') , this.update);
-			this.listenTo(app.spectrogram, 'sourceChanged' , this.resetToneline);
+			this.listenTo(app.eventAgg, this.get('watch') , this.update);
+			this.listenTo(app.eventAgg, 'controls:playPause' , this.resetToneline);
 
 			this._tones = [];
 			this._line = new Line();

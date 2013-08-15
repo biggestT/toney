@@ -71,11 +71,12 @@ var app = app || {};
 				console.log('xDiff: '+ xDiff + ' yDiff: ' + yDiff);
 				console.log('xScore: '+ xScore + ' yScore: ' + yScore);
 
-				this.trigger('game:newScore', starScore);
+				app.eventAgg.trigger('game:newScore', starScore);
 			}
 		},
 		updateReferenceLine: function (line) {
 			this._referenceLine = line.clone();
+			app.eventAgg.trigger('reference:reset');
 			console.log('new reference toneline: ' + line);
 		}
 

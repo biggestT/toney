@@ -19,7 +19,7 @@ var app = app || {};
 	app.TonelineView = Backbone.View.extend({
 		
 		tagName: 'canvas',
-		lineWidth: 20,
+		lineWidth: 40,
 
 		initialize: function() {
 			
@@ -49,7 +49,7 @@ var app = app || {};
 
 				ctx.lineWidth = this.lineWidth;
 				ctx.strokeStyle = grad;
-				ctx.lineCap="round";
+				// ctx.lineCap="round";
 
 				var xStart = c.width/2-n/2*xScale;
 				var yStart = c.height/2+a/2*yScale;
@@ -62,7 +62,7 @@ var app = app || {};
 					var dx = x*xScale;
 					var start = [0, 0];
 					var stop = [dx, dy];
-
+					
 					ctx.transform(1,0,0,1,xStart,yStart);
 						ctx.beginPath();
 						ctx.moveTo(start[0], start[1]);

@@ -6,87 +6,67 @@ var app = app || {};
 
 (function () {
 
-	// Starpower credits to Programming Thomas! 
-	// http://programmingthomas.wordpress.com/2012/05/16/drawing-stars-with-html5-canvas/
-		
-	var drawStar = function (ctx, x, y, r, p, m, filled) {
-		// var ctx = this.ctx;
-		ctx.save();
-		ctx.beginPath();
-		ctx.translate(x, y);
-		ctx.moveTo(0,0-r);
-		for (var i = 0; i < p; i++) {
-			ctx.rotate(Math.PI / p);
-			ctx.lineTo(0, 0 - (r*m));
-			ctx.rotate(Math.PI / p);
-			ctx.lineTo(0, 0 - r);
-		}
-		ctx.closePath();
-		if(filled) {
-			ctx.fill();
-		}
-		else {
-			ctx.lineWidth = 1;
-			ctx.strokeStyle = 'grey';
-			ctx.stroke();
-		}
-		ctx.restore();
-	};
-
 	app.ScoreView = Backbone.View.extend({
 		
 		scale: 20,
 		margin: 20,
-		drawingDelay: 150,
-		colors: ['#FFFF33', '#FFFF66'],
+		drawingDelay: 180,
+		colors: ['#FFFF33', '#DDD'],
 
 		initialize: function() {
-			this.ctx = app.game.ctx;
+			
+			if( !(arguments[0] instanceof jQuery) ) {
+				app.eventAgg.trigger('error', 'no jQuery element passed to score view');
+				return;
+			};
+
+			this.$el = arguments[0];
+
+			this.stars = [];
+			for (var i = 0; i < app.game.get('maxStars'); i++) {
+				this.stars.push($('<i>', { class: 'icon-star' }));
+				console.log('added star icon');
+			};
+			
+			this.$el.append(this.stars);
+
+			// Listen to the corresponding game model 
+			this.listenTo(app.eventAgg, 'game:newScore', this.render);
+			
 		},
-		draw: function (starScore) {
-			var line = this.line;
-			var ctx = this.ctx;
-			var c = ctx.canvas;
-			var s = this.scale;
-			var m = this.margin;
-			var N = app.game.get('maxStars');
+		render: function (starScore) {
+			
+
 			var dt = this.drawingDelay;
-			var n = starScore;
-			var w = (s+m)*(N-1)+s;
-			var col = this.colors;
+			var N = app.game.get('maxStars');
 
-			var xStart = (c.width-w)/2;
-			var yStart = (c.height-s)*0.90;
-			var grad = ctx.createLinearGradient(0, 0, (s+m)*n, 0);
-			grad.addColorStop(0, col[0]);
-			grad.addColorStop(1, col[1]);
-			ctx.fillStyle = grad;
-
-			var dx = s+m;
-
-			// Recursively draw stars with a certain delay in between each
+			// Empty all current star icons
+			for (var i = 0; i < N; i++) {
+				this.stars[i].css('color', 'transparent');
+			};
+			// Recursively show stars with a certain delay in between each
 			var current = 0;
 
-			setTimeout(drawNextStar, dt);
+			setTimeout(showNextStar.bind(this), dt);
 
-			function drawNextStar() {
-
-				if (current >= N) {
-					app.eventAgg.trigger('game:doneDrawingStars');
-					return;
-				}
+			function showNextStar() {
 
 				var filled = (current < starScore ) ? true : false;
-				drawStar(ctx, xStart, yStart, s, 5, 0.5, filled);
-				if (filled) { app.eventAgg.trigger('game:drawingStar'); }
-				current++;
-				xStart += dx;
+				if (filled) {
+					this.stars[current].css('color', this.colors[0]);
+					app.eventAgg.trigger('game:drawingStar');
+					current++;
+			  	setTimeout(showNextStar.bind(this), dt);
+				} 
+				else {
+					for (var i = current; i < N; i++) {
+						this.stars[i].css('color', this.colors[1]);
+					};
+					app.eventAgg.trigger('game:doneDrawingStars');
+				}
 
-			  setTimeout(drawNextStar, dt);
 			}
-		
-		},
-
+		}
 		
 	});
 })();

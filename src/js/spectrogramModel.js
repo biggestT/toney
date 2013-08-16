@@ -22,6 +22,8 @@ var audioContext;
 		execute: function() {
 			this._analyser.connectMicrophone();
 			this._analyser.startSoundAnalysis();
+			console.log('executing microphone state');
+
 		},
 		exit: function() {
 			this._analyser.stopSoundAnalysis();
@@ -29,6 +31,7 @@ var audioContext;
 		},
 		update: function () {
 			app.eventAgg.trigger('microphone:updated', this._analyser._highpassSpectrogram);
+			console.log('updated microphone spectrum');
 		}
 	});
 
@@ -40,6 +43,7 @@ var audioContext;
 		execute: function() {
 			this._analyser.connectSoundfile();
 			this._analyser.startSoundAnalysis();
+			console.log('executing soundfile state');
 		},
 		exit: function() {
 			this._analyser.stopSoundAnalysis();
@@ -84,7 +88,7 @@ var audioContext;
 				fMax: 3400,
 				qFactor: 0.05
 			},
-			soundfileSource: 'audio/ma_short.ogg',
+			soundfileSource: 'https://dl.dropboxusercontent.com/u/16171042/toney/ma_short.ogg',
 			currState: null,
 			downsampleRate: 4,
 			playing: false,
@@ -128,13 +132,23 @@ var audioContext;
 			this.once('microphone:ready', this.initializeSoundfile, this);
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
 			this.once('audiograph:ready', function () {
-				this.inputToggle();
+				this.changeState(this._states.microphone);
 				app.eventAgg.trigger('spectrogram:ready'); // Tell the application that the spectrogram is ready
 			}.bind(this));
 
 			console.log(this.get('playing'));
-			this.listenTo(app.eventAgg, 'controls:playPause', this.inputToggle);
-			this.listenTo(app.eventAgg, 'reference:reset', this.inputToggle);
+			this.listenTo(app.eventAgg, 'controls:playPause', function () {
+				if (this._soundfile.get('playing')) {
+					this._soundfile.pause();
+					console.log('model pause soundfile on behalf of controls');
+				}
+				else {
+					this._soundfile.play();
+					console.log('model started soundfile on behalf of controls');
+				}
+			});
+			// this.on('change:playing', this.inputToggle);
+			// this.listenTo(app.eventAgg, 'reference:reset', this.inputToggle);
 		},
 
 		// MICROPHONE METHODS
@@ -162,11 +176,16 @@ var audioContext;
 			console.log('initializeSoundfile');
 			this._soundfile = new app.SegmentedSound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
 			this.listenTo(this._soundfile, 'change:playing', function () {
-
 				var isPlaying = this._soundfile.get('playing');
-
 				app.eventAgg.trigger('reference:playPause');
 				this.set({ playing: isPlaying });
+				console.log('model heard: ' + isPlaying);
+				if (isPlaying) {
+					this.changeState(this._states.soundfile);
+				}
+				else {
+					this.changeState(this._states.microphone);
+				}
 			});
 			this.listenTo(this._soundfile, 'reset', function () {
 
@@ -184,10 +203,12 @@ var audioContext;
 			this._soundfileInput.connect(this._analysisInputNode);
 			this._soundfileInput.connect(audioContext.destination);
 			this._soundfile.play();
+			console.log('tried playing from model');
 		},
 		disconnectSoundfile: function () {
 			this._soundfileInput.disconnect();
 			this._soundfile.pause();
+			console.log('disconnected soundfile and paused audio');
 		},
 
 		// ANALYSER METHODS
@@ -360,21 +381,6 @@ var audioContext;
 			this._analysisOutputNode.connect(audioContext.destination);
 
 			this.trigger('audiograph:ready');
-		},
-
-		// SWAP BETWEEN SOUNDFILE / MICROPHONE
-		// ----------------------------------------------
-
-		inputToggle: function() {
-			if ( this.get('playing') || this.get('processing') ) {
-				this.changeState(this._states.microphone);
-			}
-			else {
-				this.changeState(this._states.soundfile);
-			}
-			app.eventAgg.trigger('spectrogram:sourceChange');
-			console.log(this.get('playing'));
-
 		},
 
 		// STATE PATTERN UTILITY

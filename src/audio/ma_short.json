@@ -4,18 +4,18 @@
 		{	
 			"name": "the 1st tone", 
 			"help": "Keep a high and steady pitch to produce the first tone",
-			"start": 0.00,
-			"stop": 1.10
+			"start": 0.0,
+			"stop": 2.10
 		},
 		{
 			"name": "the 2nd tone", 
 			"help": "Say it like it was a question, that results in the rising pitch of the second tone.",
-			"stop": 1.00
+			"stop": 2.00
 		},
 		{
 			"name": "the 3rd tone", 
 			"help": "Sometimes moving your chin can help to alter the tone of your speech and give it that special third-tone quirkiness",
-			"stop": 2.20
+			"stop": 2.80
 		},
 		{
 			"name": "the 4th tone", 

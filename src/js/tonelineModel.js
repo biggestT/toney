@@ -156,9 +156,9 @@ var app = app || {};
 
 		initialize: function () {
 
-			// SUBSCRIBE TO THE SINGLE SPECTROGRAM MODEL 
+			// SUBSCRIBE TO GLOBAL EVENTS
 			this.listenTo(app.eventAgg, this.get('watch') , this.update);
-			this.listenTo(app.eventAgg, 'controls:playPause' , this.resetToneline);
+			this.listenTo(app.spectrogram, 'change:playing' , this.resetToneline);
 
 			this._tones = [];
 			this._line = new Line();

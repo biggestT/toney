@@ -13,6 +13,7 @@ var app = app || {};
 	var resetSoundfile = function () {
 			this._audio.pause();
 			this._audio.currentTime = 0;
+			console.log('tried to reset' + this._audio.src);
 	}
 
 	app.Sound = Backbone.Model.extend({
@@ -55,7 +56,8 @@ var app = app || {};
 				// Catch audiofile errors and send to the applications event aggregator
 
 				this._audio.addEventListener('error', function (err) {
-					app.eventAgg('error:soundfile', event.srcElement.error);
+					app.eventAgg.trigger('error:soundfile', event.srcElement.error);
+					console.log(event.srcElement.error);
 				}.bind(this));
 			}
 			catch (err) {
@@ -66,10 +68,7 @@ var app = app || {};
 		play: function () {
 			if (this.get('playing') != true) {
 				this._audio.play();
-			}
-			else {
-				var tempAudio = this._audio.cloneNode();
-				tempAudio.play();
+				console.log('tried to play audio at' + this._audio.currentTime);
 			}
 		},
 		pause: function () {
@@ -110,7 +109,8 @@ var app = app || {};
 		defaults: {
 			title: 'no title',
 			format: '.json',
-			currentSample: null
+			currentSample: null,
+			time: 0
 		},
 
 		initialize: function() {
@@ -137,10 +137,12 @@ var app = app || {};
 					// Add an event listener that pauses the audio if the end of the current sample is reached
 					this._audio.addEventListener('timeupdate', function () {
 						var current =  this.get('currentSample');
+						this.set( {time: this._audio.currentTime} );
+
 						console.log(this._audio.currentTime);
 						if (this._audio.currentTime > current.stop) {
 							this.pause();
-							// this._audio.currentTime = current.start;
+							this._audio.currentTime = current.start;
 						}
 					}.bind(this));
 

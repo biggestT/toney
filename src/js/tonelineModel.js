@@ -174,7 +174,7 @@ var app = app || {};
 			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'), this.get('varThreshold'));
 
 			// only update line if considered being the same speech sample
-			if (this._silenceCount < 30) {
+			if (this._silenceCount < 40) {
 				if (currPitch > 0) {
 					this._tones.push(currPitch);
 					var segment = getLinearApproximation(this._tones);
@@ -193,7 +193,6 @@ var app = app || {};
 						}
 
 						this._prevK = segment.k;
-						// console.log(this._line);
 						this.trigger('tonelineChange', this._line);
 					}
 				} 

@@ -10,17 +10,31 @@ body {
 	-webkit-filter: saturate(0.9) sepia(0.05);
 	background-color: white-smoke;
 	text-transform: uppercase;
-	font-family: 'asian';
+	font-family: 'Bowlby One SC';
 }
+
+.loading {
+	margin-top: 10%;
+	color: #BB0805;
+	text-align: center;
+}
+	.loading-text {
+		margin-top: 5%;
+		font-size: 2vw;
+	}
+	.icon-spinner {
+	font-size: 5vw;
+	}
 
 .scoreboard {
 	text-align: center;
 }
-.icon-star {
-	color: transparent;
-	font-size: 7vw;
-	margin: 0 1.1vw;
-}
+	.icon-star {
+		color: transparent;
+		font-size: 7vw;
+		margin: 0 1.1vw;
+	}
+
 #gamewindow {
 	position: absolute;
 	z-index: -1
@@ -30,11 +44,12 @@ body {
 	height: 70%;
 }
 input {
-	font-family: 'asian';
+	/*font-family: 'asian';*/
+	font-family: 'Bowlby One SC';
 	position: relative;
 	display: block;
 	font-size: 5vw;
-	width: 20vw;
+	width: 100%;
 	padding: 2vw;
 	background-color: transparent;
 	border: none;

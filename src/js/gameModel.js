@@ -11,9 +11,9 @@ var app = app || {};
 		defaults: {
 			player: null,
 			reference: null,
-			maxLength: 50,
+			maxLength: 40,
 			maxAmplitude: 5,
-			maxStars: 3,
+			maxStars: 1,
 			soundFX: true,
 			processing: false
 		},

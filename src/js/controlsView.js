@@ -22,7 +22,7 @@ var app = app || {};
 
 			this.$controls = arguments[0];
 
-			this.$playPause = $('<input>', { type: 'button', value: 'play' });
+			this.$playPause = $('<input>', { type: 'button', value: 'start' });
 			this.$playPause.click(playPause);
 
 			this.$controls.append(this.$playPause);
@@ -33,7 +33,7 @@ var app = app || {};
 		},
 
 		render: function () {
-			this.$playPause.prop('value', isPlaying() ?  'play':  'pause');
+			this.$playPause.prop('value', isPlaying() ?  'replay':  'pause');
 			this.$playPause.css('color', isPlaying() ?  '#2EFE3E':  '#FF4D2E');
 		},
 		clearCanvas: function() {

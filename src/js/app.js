@@ -10,30 +10,37 @@ var app = app || {};
 
 		initialize: function() {
 
-			this.$loadingImage = $('<img>', { src: 'images/processing.gif', id: 'loadingImage'} );
+			// jQuery elements in the inital loading screen
+			this.$loadingIcon = $('<i>', { class: 'icon-spinner icon-spin icon-large'} );
+			this.$loadingElement = $('<div>', { class: 'loading'} );
+			this.$loadingText = $('<div>', { class: 'loading-text'} );
+			this.$loadingText.text('please allow Toney to use your microphone');
+			this.$loadingElement.prepend(this.$loadingIcon, [this.$loadingText]);
+
+			// jQuery elements for the different visual game components
 			this.$gameWindow = $('<canvas>', { id: 'gamewindow' });
 			this.$gameWindow[0].width = $(window).width();
 			this.$gameWindow[0].height = $(window).height();
 			this.$controls = $('<menu>', { class: 'controls' });
 			this.$score = $('<div>', { class: 'scoreboard' });
+
 			// Set new gamewindow size each time the window is resized
 			// Not working ATM since the change needs to be propagated downwards through all
-			// effected game components!
+			// effected game components e.g the tonelines widths in pixels
 
 			// $(window).resize( function () {
 			// 	this.$gameWindow[0].width = $(window).width();
 			// 	this.$gameWindow[0].height = $(window).height();
 			// });
-
-			// The Applications event aggregator
-			// ---------------------------------
+			
+			// The Applications global event aggregator
+			// ----------------------------------------
 			app.eventAgg = _.extend({}, Backbone.Events);
 
 			this.$el.append( this.$gameWindow , [ this.$controls, this.$score ]);
-			this.$el.parent().append( this.$loadingImage );
+			this.$el.parent().append( this.$loadingElement );
 
 			// Initially only show the loading image
-			this.$loadingImage.show();
 			this.$el.hide();
 
 			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
@@ -45,7 +52,7 @@ var app = app || {};
 			//----------------------------------
 
 			app.game = new app.GameModel();
-			app.game.ctx = this.$gameWindow[0].getContext('2d'); // global context for drawing game related things
+			app.game.ctx = this.$gameWindow[0].getContext('2d'); // global context for drawing tonelines
 			
 			app.gameView = new app.GameView();
 
@@ -58,7 +65,7 @@ var app = app || {};
 
 			// RENDER THE GAME WINDOW ONCE SPECTROGRAM HAS GONE THROUGH ITS INITIAL SETUP
 			this.listenToOnce( app.eventAgg, 'spectrogram:ready', function () {
-				this.$loadingImage.hide();
+				this.$loadingElement.remove();
 				this.$el.show();
 			} );
 		}

@@ -47,7 +47,7 @@ var audioContext;
 		},
 		update: function () {
 			app.eventAgg.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
-			console.log(this._analyser._soundfile.getAudioElement().currentTime);
+			// console.log(this._analyser._soundfile.getAudioElement().currentTime);
 			// this._analyser.trigger('soundfile:updated', this._analyser._highpassSpectrogram);
 		}
 	});
@@ -160,7 +160,7 @@ var audioContext;
 
 		initializeSoundfile: function () {
 			console.log('initializeSoundfile');
-			this._soundfile = new app.Sound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
+			this._soundfile = new app.SegmentedSound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
 			this.listenTo(this._soundfile, 'change:playing', function () {
 
 				var isPlaying = this._soundfile.get('playing');

@@ -49,7 +49,7 @@ var app = app || {};
 
 				ctx.lineWidth = this.lineWidth;
 				ctx.strokeStyle = grad;
-				// ctx.lineCap="round";
+				ctx.lineCap="round";
 
 				var xStart = c.width/2-n/2*xScale;
 				var yStart = c.height/2+a/2*yScale;

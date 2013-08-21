@@ -32,8 +32,10 @@ var app = app || {};
 			// PANDA HELP!
 			// --------------
 
-			this.$title = $('<p>', { class: 'help help-title' });
-			this.$help = $('<p>', { class: 'help help-text' });
+			this.$help = $('<div>', { class: 'help' });
+			this.$title = $('<p>', { class: 'help-title' });
+			this.$text = $('<p>', { class: 'help-text' });
+			this.$help.append(this.$title, [this.$text]);
 
 			// PANDA !
 			// --------------
@@ -50,7 +52,6 @@ var app = app || {};
 			
 			// Add the elements of the help menu in the correct order
 			this.elements = [];
-			this.elements.push(this.$title);
 			this.elements.push(this.$help);
 			this.elements.push(this.$panda);
 			this.elements.push(this.$start);
@@ -67,7 +68,7 @@ var app = app || {};
 		render: function () {
 			if (this.visible) {
 				this.$title.text(this.title);
-				this.$help.text(this.text);
+				this.$text.text(this.text);
 			}
 		},
 		update: function (newSample) {

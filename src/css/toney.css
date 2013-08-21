@@ -7,23 +7,28 @@
 }
 
 body {
-	-webkit-filter: saturate(0.9) sepia(0.05);
-	background-color: white-smoke;
+	background-color: whitesmoke;
 	text-transform: uppercase;
 	font-family: 'Bowlby One SC';
 }
 
 .loading {
-	margin-top: 10%;
-	color: #BB0805;
+	margin-top: 5%;
+	color: gray;
 	text-align: center;
 }
 	.loading-text {
-		margin-top: 5%;
+		margin-top: 10%;
 		font-size: 2vw;
+		text-transform: none;
+
+	}
+	.loading-panda {
+		margin-left: 40%;
+		height: 20%;
 	}
 	.icon-spinner {
-	font-size: 5vw;
+		font-size: 5vw;
 	}
 
 .scoreboard {
@@ -67,14 +72,27 @@ input {
 .help {
 	font-size: 1vmax;
 	color: gray;
-	text-align: center;
+	text-align: left;
+	margin-left: 50%;
+	width: 20%;
+	border: dashed;
+	padding: 0 2% 2% 2%;
+	border-width: 2px;
+	border-color: lightgray;
+	border-right: none;
+	border-top: none;
 }
 	.help-title {
 		font-size: 2vmax;
 	}
+	.help-text {
+		font-family: sans-serif;
+		line-height: 150%;
+		text-transform: none;
+	}
 	.panda {
 		width: 20%;
 		height: 20%;
-		margin: 5% auto;
+		margin: 0  0 5% 25%;
 	}
 

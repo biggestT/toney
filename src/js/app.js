@@ -13,9 +13,15 @@ var app = app || {};
 			// jQuery elements in the inital loading screen
 			this.$loadingIcon = $('<i>', { class: 'icon-spinner icon-spin icon-large'} );
 			this.$loadingElement = $('<div>', { class: 'loading'} );
+
+			this.$loadingPanda = $('<div>', { class: 'loading-panda'} );
+			this.$pandaImg = $('<img>', { src: 'images/toneypanda.svg' } );
+			this.$loadingPanda.append(this.$pandaImg);
+
 			this.$loadingText = $('<div>', { class: 'loading-text'} );
-			this.$loadingText.text('please allow Toney to use your microphone');
-			this.$loadingElement.prepend(this.$loadingIcon, [this.$loadingText]);
+			this.$loadingText.text('please allow Fat Toney to use your microphone');
+
+			this.$loadingElement.prepend(this.$loadingIcon, [this.$loadingPanda, this.$loadingText ]);
 
 			// jQuery elements for the different visual game components
 			this.$toneWindow = $('<canvas>', { id: 'gamewindow' });

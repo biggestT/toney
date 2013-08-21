@@ -70,6 +70,20 @@ var audioContext;
 			console.log('finished processing');
 		}
 	});
+	var StandbyState = BaseState.extend({
+		defaults: {
+			index: 3,
+			name: "standby" 
+		},
+		execute: function() {
+			this._analyser.set({ 'standby': true });
+			console.log('spectrogram standby ...');
+		},
+		exit: function() {
+			this._analyser.set({ 'standby': false });
+			console.log('spectrogram started again!');
+		}
+	});
 	
 	// THE MODEL WHICH OUTPUTS A SPECTROGRAM TO LISTENING VIEWS AND/OR MODELS
 	// -----------------------------------------------------------------------
@@ -91,8 +105,9 @@ var audioContext;
 			soundfileSource: 'https://dl.dropboxusercontent.com/u/16171042/toney/ma_short.ogg',
 			currState: null,
 			downsampleRate: 4,
-			playing: false,
 			processing: false,
+			standby: false,
+			playing: false,
 			externalAnalyser: false,
 			audioNodes: []
 		},
@@ -117,7 +132,8 @@ var audioContext;
 			this._states = {
 					microphone: new MicrophoneState(this),
 					soundfile: new SoundfileState(this),
-					processing: new ProcessingState(this)
+					processing: new ProcessingState(this),
+					standby: new StandbyState(this)
 			};
 
 			// enter processingstate while waiting for microphone and soundfile
@@ -132,8 +148,8 @@ var audioContext;
 			this.once('microphone:ready', this.initializeSoundfile, this);
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
 			this.once('audiograph:ready', function () {
-				this.changeState(this._states.microphone);
-				app.eventAgg.trigger('spectrogram:ready'); // Tell the application that the spectrogram is ready
+				this.changeState(this._states.standby);
+				// app.eventAgg.trigger('spectrogram:ready'); // Tell the application that the spectrogram is ready
 			}.bind(this));
 
 			console.log(this.get('playing'));
@@ -400,6 +416,12 @@ var audioContext;
 				this.trigger('stateChanged');
 			}
 		},
+		standby: function () {
+			this.changeState(this._states.standby);
+		},
+		start: function () {
+			this.changeState(this._states.microphone);
+		}
 	
 	});
 })();

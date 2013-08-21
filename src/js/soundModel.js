@@ -86,7 +86,9 @@ var app = app || {};
 
 (function () {
 
-	// Private member function to store data
+	// PRIVATE FUNCTIONS 
+	// -----------------
+
 	var readJSON= function (data) {
 
 		this._samples = [];
@@ -94,6 +96,7 @@ var app = app || {};
 
 		$.each(data.samples, function (key, value) {
 			this[key] = {
+				level: key+1,
 				name: (value.name) ? value.name : '',
 				help: (value.help) ? value.help : '',
 				start:  (value.start) ? value.start : prevStop,
@@ -103,6 +106,20 @@ var app = app || {};
 		}.bind(this._samples))
 		this.set({title: data.title});
 	};
+
+	var checkIfWithinSegment = function () {
+			var current =  this.get('currentSample');
+			this.set( {time: this._audio.currentTime} );
+			// console.log(this._audio.currentTime);
+
+			if (this._audio.currentTime > current.stop) {
+				this.pause();
+				this._audio.currentTime = current.start;
+			}
+	};
+
+	// CLASS 
+	// --------------------------------------
 
 	app.SegmentedSound = app.Sound.extend({
 
@@ -132,19 +149,12 @@ var app = app || {};
 					var startSample = this._samples[this._sampleCount];
 					this.set({ currentSample: startSample });
 					this._audio.currentTime = startSample.start;
+
+					// send sample metadata to observers, e.g the panda help viewer:
 					app.eventAgg.trigger('metaData:loaded');
 
 					// Add an event listener that pauses the audio if the end of the current sample is reached
-					this._audio.addEventListener('timeupdate', function () {
-						var current =  this.get('currentSample');
-						this.set( {time: this._audio.currentTime} );
-
-						console.log(this._audio.currentTime);
-						if (this._audio.currentTime > current.stop) {
-							this.pause();
-							this._audio.currentTime = current.start;
-						}
-					}.bind(this));
+					this._audio.addEventListener('timeupdate', checkIfWithinSegment.bind(this));
 
 				}.bind(this))
 				.fail( function (jqxhr, textStatus, error) {
@@ -154,12 +164,20 @@ var app = app || {};
 				this.set({ data: jsonPath });
 
 			}.bind(this));
+
+			// GO THE NEXT LEVEL ONCE GLOBAL LEVEL PASSED EVENT IS FIRED
+			this.listenTo(app.eventAgg, 'game:levelPassed', this.next);
+			
+			// FIRE GLOBAL EVENT ONCE CURRENT SAMPLE IS CHANGED
+			this.on('change:currentSample', function () {
+				app.eventAgg.trigger('game:newLevel', this.get('currentSample'));
+			});
 			
 
 		},
 		next: function () {
 			this._sampleCount++;
-			var newTime = this._samples[this_sampleCount].start;
+			var newTime = this._samples[this._sampleCount].start;
 			this._audio.currentTime = newTime;
 			this.set({ currentSample: this._samples[this._sampleCount] });
 		}

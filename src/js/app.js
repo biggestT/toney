@@ -18,11 +18,22 @@ var app = app || {};
 			this.$loadingElement.prepend(this.$loadingIcon, [this.$loadingText]);
 
 			// jQuery elements for the different visual game components
-			this.$gameWindow = $('<canvas>', { id: 'gamewindow' });
-			this.$gameWindow[0].width = $(window).width();
-			this.$gameWindow[0].height = $(window).height();
+			this.$toneWindow = $('<canvas>', { id: 'gamewindow' });
+			this.$toneWindow[0].width = $(window).width();
+			this.$toneWindow[0].height = $(window).height();
 			this.$controls = $('<menu>', { class: 'controls' });
 			this.$score = $('<div>', { class: 'scoreboard' });
+
+			this.gameComponents = [];
+			this.gameComponents.push(this.$toneWindow);
+			this.gameComponents.push(this.$controls);
+			this.gameComponents.push(this.$score);
+
+			this.$game = $('<div>', {id : 'game'});
+			this.$game.append(this.gameComponents);
+
+			// jQuery elements for the help view
+			this.$help = $('<div>', { id: 'help' });
 
 			// Set new gamewindow size each time the window is resized
 			// Not working ATM since the change needs to be propagated downwards through all
@@ -37,11 +48,9 @@ var app = app || {};
 			// ----------------------------------------
 			app.eventAgg = _.extend({}, Backbone.Events);
 
-			this.$el.append( this.$gameWindow , [ this.$controls, this.$score ]);
+			this.$el.append(this.$help);
+			this.$el.append(this.$game);
 			this.$el.parent().append( this.$loadingElement );
-
-			// Initially only show the loading image
-			this.$el.hide();
 
 			// MODEL FOR HANDLING INPUT AND OUTPUTTING SPECTROGRAM TO TONELINES
 			//---------------------------------------------------
@@ -52,22 +61,43 @@ var app = app || {};
 			//----------------------------------
 
 			app.game = new app.GameModel();
-			app.game.ctx = this.$gameWindow[0].getContext('2d'); // global context for drawing tonelines
+			app.game.ctx = this.$toneWindow[0].getContext('2d'); // global context for drawing tonelines
 			
-			app.gameView = new app.GameView();
+			app.toneView = new app.GameView();
 
 			app.controlsView = new app.ControlsView(this.$controls);
 
 			app.scoreView = new app.ScoreView(this.$score);
 
+			app.helpView = new app.HelpView(this.$help);
+
 			app.gameSounds = new app.SoundFX();
 
 
-			// RENDER THE GAME WINDOW ONCE SPECTROGRAM HAS GONE THROUGH ITS INITIAL SETUP
-			this.listenToOnce( app.eventAgg, 'spectrogram:ready', function () {
-				this.$loadingElement.remove();
-				this.$el.show();
-			} );
+			// // RENDER THE GAME WINDOW ONCE SPECTROGRAM HAS GONE THROUGH ITS INITIAL SETUP
+			// this.listenToOnce( app.eventAgg, 'spectrogram:ready', function () {
+			// 	this.$loadingElement.remove();
+			// 	this.$help.show();
+			// } );
+	
+			this.listenTo( app.spectrogram, 'change:processing change:standby', this.render)
+			
+			this.render();
+		},
+		render: function () {
+			this.$loadingElement.hide();
+			this.$help.hide();
+			this.$game.hide();
+
+			if (app.spectrogram.get('processing')) {
+				this.$loadingElement.show();
+			}
+			else if (app.spectrogram.get('standby')) {
+				this.$help.show();
+			}
+			else {
+				this.$game.show();
+			}
 		}
 	});
 })(jQuery);

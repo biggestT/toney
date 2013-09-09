@@ -31,7 +31,7 @@ var app = app || {};
 			this.$el.append(this.stars);
 
 			// Listen to the corresponding game model 
-			this.listenTo(app.eventAgg, 'game:newScore', this.render);
+			this.listenTo(app.eventAgg, 'game:newScore game:startStop', this.render);
 			
 		},
 		render: function (starScore) {

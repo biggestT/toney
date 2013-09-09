@@ -110,7 +110,7 @@ var app = app || {};
 	var checkIfWithinSegment = function () {
 			var current =  this.get('currentSample');
 			this.set( {time: this._audio.currentTime} );
-			// console.log(this._audio.currentTime);
+			console.log(this._audio.currentTime);
 
 			if (this._audio.currentTime > current.stop) {
 				this.pause();

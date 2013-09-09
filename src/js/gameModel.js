@@ -18,7 +18,8 @@ var app = app || {};
 			active: false,
 			level: 1,
 			passedLevels: 0,
-			currLevelPassed: false
+			currLevelPassed: false,
+			referenceLine: null
 		},
 
 		initialize: function () {
@@ -47,10 +48,11 @@ var app = app || {};
 				this.set({ active: false });
 			});
 			this.listenTo(app.eventAgg, 'game:newLevel', function (sample) {
+				console.log(sample.level);
 				this.set({ level: sample.level });
 			});
 
-			this.on('change:passedLevels', this.update);
+			this.on('change:level change:passedLevels', this.updateLevel);
 			this.on('change:active', function () {
 				if (this.get('active') == true ){
 					this.start();
@@ -61,38 +63,49 @@ var app = app || {};
 			});
 			
 		},
-		update: function () {
-			var currPassed = ( this.get('passedLevels') <= this.get('level') );
+		updateLevel: function () {
+			var currPassed = ( this.get('passedLevels') >= this.get('level') );
+			console.log(currPassed + 'passed: ' + this.get('passedLevels') + 'current: ' + this.get('level') );
 			this.set({ currLevelPassed: currPassed });
+			if (currPassed) {
+				app.eventAgg.trigger('game:levelPassed', this.get('level'));
+			}
 		},
 		stop: function () {
 			app.spectrogram.standby();
+			app.eventAgg.trigger('game:startStop');
+			console.log('game stopped');
 		},
 		start: function () {
 			app.spectrogram.start();
+			app.eventAgg.trigger('game:startStop');
+			console.log('game started');
 		},
 		getPlayerScore: function (line) {
-			if (typeof this._referenceLine !== 'undefined') {
+			if (typeof this.get('referenceLine') !== null) {
 
+				// console.log(this.get('referenceLine') == null);
 				var playerSize = line.getSize();
-				var referenceSize = this._referenceLine.getSize();
+				var referenceSize = this.get('referenceLine').getSize();
 
 				var longest = Math.max(playerSize[0], referenceSize[0]);
 				var highest = Math.max(Math.abs(playerSize[1]), Math.abs(referenceSize[1]));
 				
-				var ratio = 0.5; // Importance of total line length VS total line slope: [0->1]
+				var ratio = 0.6; // Importance of total line length VS total line slope: [0->1]
 
 				var xDiff = Math.abs(playerSize[0]-referenceSize[0]);
 				var yDiff = Math.abs(playerSize[1]-referenceSize[1]);
 
-				var xScore = (longest === 0) ? ratio * 1 : ratio * (1-xDiff/longest);
-				var yScore = (highest === 0) ? (1-ratio) * 1 : (1-ratio) * (1-yDiff/highest) ;
-
+				var xScore = (xDiff === 0) ? ratio * 1 : ratio * (1-xDiff/longest);
+				var yScore = (yDiff === 0) ? (1-ratio) * 1 : (1-ratio) * (1-yDiff/highest) ;
+				console.log(xDiff/longest);
+				console.log(yDiff/highest);
 				var starScore = Math.round(Math.min(xScore+yScore,1)*this.get('maxStars'));
 
 				console.log('longest: '+ longest + ' highest: ' + highest);
 				console.log('xDiff: '+ xDiff + ' yDiff: ' + yDiff);
 				console.log('xScore: '+ xScore + ' yScore: ' + yScore);
+				console.log('decimal Score: '+ (xScore+yScore));
 
 				app.eventAgg.trigger('game:newScore', starScore);
 
@@ -102,16 +115,15 @@ var app = app || {};
 					var currLevel = this.get('level');
 					var passedLevels = this.get('passedLevels');
 
-					if ( currLevel >= passedLevels ) {
-						passedLevels++
+					if ( currLevel > passedLevels ) {
+						passedLevels++;
 						this.set({ passedLevels: passedLevels });
-						app.eventAgg.trigger('game:levelPassed', currLevel);
 					}
 				}
 			}
 		},
 		updateReferenceLine: function (line) {
-			this._referenceLine = line.clone();
+			this.set({ referenceLine: line.clone() });
 			app.eventAgg.trigger('reference:reset');
 			console.log('new reference toneline: ' + line);
 		}

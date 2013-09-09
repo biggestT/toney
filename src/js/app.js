@@ -52,6 +52,7 @@ var app = app || {};
 			
 			// The Applications global event aggregator
 			// ----------------------------------------
+			// app.eventAgg = new app.EventAggregator();
 			app.eventAgg = _.extend({}, Backbone.Events);
 
 			this.$el.append(this.$help);
@@ -69,6 +70,8 @@ var app = app || {};
 			app.game = new app.GameModel();
 			app.game.ctx = this.$toneWindow[0].getContext('2d'); // global context for drawing tonelines
 			
+
+
 			app.toneView = new app.GameView();
 
 			app.controlsView = new app.ControlsView(this.$controls);
@@ -78,8 +81,6 @@ var app = app || {};
 			app.helpView = new app.HelpView(this.$help);
 
 			app.gameSounds = new app.SoundFX();
-
-
 			// // RENDER THE GAME WINDOW ONCE SPECTROGRAM HAS GONE THROUGH ITS INITIAL SETUP
 			// this.listenToOnce( app.eventAgg, 'spectrogram:ready', function () {
 			// 	this.$loadingElement.remove();

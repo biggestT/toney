@@ -50,9 +50,9 @@ var app = app || {};
 		},
 
 		render: function () {
-			console.log('rendering controls');
-			this.$playPause.prop('value', isPlaying() ?  'replay':  '');
-			this.$playPause.css('color', isPlaying() ?  this.colors[0]:  this.colors[1]);
+			console.log('rendering controls, isplaying: ' + isPlaying());
+			this.$playPause.prop('value', isPlaying() ?  '' :  'play');
+			this.$playPause.css('color', isPlaying() ?  this.colors[1]:  this.colors[0]);
 			levelIsPassed() ?  this.$nextLevel.show() :  this.$nextLevel.hide();
 		},
 		clearCanvas: function() {

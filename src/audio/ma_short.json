@@ -10,12 +10,12 @@
 		{
 			"name": "the 2nd tone", 
 			"help": "Say it like it was a question, that results in the rising pitch of the second tone.",
-			"stop": 2.00
+			"stop": 3.00
 		},
 		{
 			"name": "the 3rd tone", 
 			"help": "Sometimes moving your chin can help to alter the tone of your speech and give it that special third-tone quirkiness",
-			"stop": 2.80
+			"stop": 4.80
 		},
 		{
 			"name": "the 4th tone", 

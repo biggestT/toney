@@ -193,8 +193,8 @@ var audioContext;
 			this._soundfile = new app.SegmentedSound(this.get('soundfileSource'), this.createSoundfileNode.bind(this));
 			this.listenTo(this._soundfile, 'change:playing', function () {
 				var isPlaying = this._soundfile.get('playing');
-				app.eventAgg.trigger('reference:playPause');
 				this.set({ playing: isPlaying });
+				app.eventAgg.trigger('reference:playPause');
 				console.log('model heard: ' + isPlaying);
 				if (isPlaying) {
 					this.changeState(this._states.soundfile);

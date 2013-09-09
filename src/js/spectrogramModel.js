@@ -209,7 +209,7 @@ var audioContext;
 				// this._soundfile = newSoundfile;
 				// this._soundfileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());
 				// this.createSoundfileNode();
-			})
+			});
 		},
 		createSoundfileNode: function () {
 			this._soundfileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());

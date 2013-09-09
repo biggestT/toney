@@ -45,10 +45,10 @@ var app = app || {};
 			// Not working ATM since the change needs to be propagated downwards through all
 			// effected game components e.g the tonelines widths in pixels
 
-			// $(window).resize( function () {
-			// 	this.$gameWindow[0].width = $(window).width();
-			// 	this.$gameWindow[0].height = $(window).height();
-			// });
+			//$(window).resize( function () {
+			// this.$gameWindow[0].width = $(window).width();
+			// this.$gameWindow[0].height = $(window).height();
+			//});
 			
 			// The Applications global event aggregator
 			// ----------------------------------------
@@ -82,12 +82,12 @@ var app = app || {};
 
 			app.gameSounds = new app.SoundFX();
 			// // RENDER THE GAME WINDOW ONCE SPECTROGRAM HAS GONE THROUGH ITS INITIAL SETUP
-			// this.listenToOnce( app.eventAgg, 'spectrogram:ready', function () {
-			// 	this.$loadingElement.remove();
-			// 	this.$help.show();
-			// } );
+			//this.listenToOnce( app.eventAgg, 'spectrogram:ready', function () {
+			// this.$loadingElement.remove();
+			// this.$help.show();
+			//} );
 	
-			this.listenTo( app.spectrogram, 'change:processing change:standby', this.render)
+			this.listenTo( app.spectrogram, 'change:processing change:standby', this.render);
 			
 			this.render();
 		},

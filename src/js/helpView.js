@@ -25,7 +25,7 @@ var app = app || {};
 			if( !(arguments[0] instanceof jQuery) ) {
 				app.eventAgg.trigger('error', 'no jQuery element passed to help text view');
 				return;
-			};
+			}
 
 			this.$el = arguments[0];
 

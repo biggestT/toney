@@ -54,7 +54,7 @@ var app = app || {};
 
 			this.on('change:level change:passedLevels', this.updateLevel);
 			this.on('change:active', function () {
-				if (this.get('active') == true ){
+				if (this.get('active')){
 					this.start();
 				}
 				else {

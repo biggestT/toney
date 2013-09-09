@@ -14,7 +14,7 @@ var app = app || {};
 			this._audio.pause();
 			this._audio.currentTime = 0;
 			console.log('tried to reset' + this._audio.src);
-	}
+	};
 
 	app.Sound = Backbone.Model.extend({
 		
@@ -66,7 +66,7 @@ var app = app || {};
 
 		},
 		play: function () {
-			if (this.get('playing') != true) {
+			if (!this.get('playing')) {
 				this._audio.play();
 				console.log('tried to play audio at' + this._audio.currentTime);
 			}
@@ -103,7 +103,7 @@ var app = app || {};
 				stop: value.stop
 			};
 			prevStop = value.stop;
-		}.bind(this._samples))
+		}.bind(this._samples));
 		this.set({title: data.title});
 	};
 

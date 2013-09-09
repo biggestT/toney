@@ -15,7 +15,7 @@ var app = app || {};
 	var levelIsPassed = function () {
 		console.log(app.game.get('currLevelPassed'));
 		return app.game.get('currLevelPassed');
-	}
+	};
 
 	app.ControlsView = Backbone.View.extend({
 		
@@ -26,7 +26,7 @@ var app = app || {};
 			if( !(arguments[0] instanceof jQuery) ) {
 				app.eventAgg.trigger('error', 'no jQuery element passed to controls');
 				return;
-			};
+			}
 
 			this.$controls = arguments[0];
 
@@ -53,7 +53,12 @@ var app = app || {};
 			console.log('rendering controls, isplaying: ' + isPlaying());
 			this.$playPause.prop('value', isPlaying() ?  '' :  'play');
 			this.$playPause.css('color', isPlaying() ?  this.colors[1]:  this.colors[0]);
-			levelIsPassed() ?  this.$nextLevel.show() :  this.$nextLevel.hide();
+			if (levelIsPassed()) {
+				this.$nextLevel.show();
+			}
+			else {
+				this.$nextLevel.hide();
+			}
 		},
 		clearCanvas: function() {
 			var ctx = this.ctx;

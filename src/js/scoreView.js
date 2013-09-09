@@ -18,7 +18,7 @@ var app = app || {};
 			if( !(arguments[0] instanceof jQuery) ) {
 				app.eventAgg.trigger('error', 'no jQuery element passed to score view');
 				return;
-			};
+			}
 
 			this.$el = arguments[0];
 
@@ -26,7 +26,7 @@ var app = app || {};
 			for (var i = 0; i < app.game.get('maxStars'); i++) {
 				this.stars.push($('<i>', { class: 'icon-star' }));
 				console.log('added star icon');
-			};
+			}
 			
 			this.$el.append(this.stars);
 
@@ -43,7 +43,7 @@ var app = app || {};
 			// Empty all current star icons
 			for (var i = 0; i < N; i++) {
 				this.stars[i].css('color', 'transparent');
-			};
+			}
 			// Recursively show stars with a certain delay in between each
 			var current = 0;
 
@@ -56,12 +56,12 @@ var app = app || {};
 					this.stars[current].css('color', this.colors[0]);
 					app.eventAgg.trigger('game:drawingStar');
 					current++;
-			  	setTimeout(showNextStar.bind(this), dt);
+					setTimeout(showNextStar.bind(this), dt);
 				} 
 				else {
 					for (var i = current; i < N; i++) {
 						this.stars[i].css('color', this.colors[1]);
-					};
+					}
 					app.eventAgg.trigger('game:doneDrawingStars');
 				}
 

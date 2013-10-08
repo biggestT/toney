@@ -55,8 +55,10 @@ var app = app || {};
 			this.$playPause.css('color', isPlaying() ?  this.colors[1]:  this.colors[0]);
 			if (levelIsPassed()) {
 				this.$nextLevel.show();
+				this.$playPause.hide();
 			}
 			else {
+				this.$playPause.show();
 				this.$nextLevel.hide();
 			}
 		},

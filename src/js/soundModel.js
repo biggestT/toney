@@ -10,10 +10,16 @@ var app = app || {};
 
 (function () {
 
+	var setTimeToZero = function (e) {
+		e.target.currentTime = 0;
+		console.log('now ' + e.target.src + 'can play again');
+	};
+
 	var resetSoundfile = function () {
 			this._audio.pause();
-			this._audio.currentTime = 0;
-			console.log('tried to reset' + this._audio.src);
+			this._audio.load(); // needs to reload audio (from cache) in order to reset
+			this._audio.addEventListener('canplay', setTimeToZero );
+			console.log('waiting for ' + this._audio.src + ' to be reset');
 	};
 
 	app.Sound = Backbone.Model.extend({
@@ -68,7 +74,7 @@ var app = app || {};
 		play: function () {
 			if (!this.get('playing')) {
 				this._audio.play();
-				console.log('tried to play audio at' + this._audio.currentTime);
+				console.log('tried to play audio at ' + this._audio.currentTime);
 			}
 		},
 		pause: function () {

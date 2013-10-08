@@ -36,7 +36,7 @@ module.exports = function(grunt) {
       }
     },
     clean: {
-      prod: [ 'build/js/*.js', 'build/css/', 'dist/']
+      prod: [ 'build/js/*.js', 'build/css/toney.min.css', 'dist/', ]
     },
 
     // Location of javascript files to use

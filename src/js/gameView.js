@@ -35,6 +35,9 @@ var app = app || {};
 			// Listen to the corresponding game model 
 			this.listenTo(app.game.get('reference'), 'tonelineChange', this.render);
 			this.listenTo(app.game.get('player'), 'tonelineChange', this.render);
+			this.listenTo(app.game.get('reference'), 'tonelineReset', this.render);
+			this.listenTo(app.game.get('player'), 'tonelineReset', this.render);
+			// this.listenTo(app.eventAgg, 'game:startStop', this.clearCanvas);
 			this.listenTo(app.game, 'game:newScore', this.drawScore);
 		},
 		render: function () {

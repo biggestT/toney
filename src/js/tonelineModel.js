@@ -174,24 +174,15 @@ var app = app || {};
 			var currPitch = getPitchHPS(spectrogram, this._spectrum, this.get('iterations'), this.get('varThreshold'));
 
 			// only update line if considered being the same speech sample
-			if (this._silenceCount < 40) {
+			if (this._silenceCount < 10) {
 				if (currPitch > 0) {
 					this._tones.push(currPitch);
 					var segment = getLinearApproximation(this._tones);
 
 					if ( !isNaN(segment.k) && !isNaN(segment.n) ) { 
 
-						// DETECT NEED FOR SEGMENTED REGRESSION ANALYSIS 
-						var signChange = segment.k*this._prevK;
-						if (signChange < -0.0002 && segment.n > 3) { // only start plotting new line if the flip is great enough and the line long enough
-							console.log(signChange);
-							this._line.addSegment(segment);
-							this._tones.length = 0;
-						}
-						else {
-							this._line.updateSegment(segment);
-						}
-
+						this._line.updateSegment(segment);
+				
 						this._prevK = segment.k;
 						this.trigger('tonelineChange', this._line);
 					}
@@ -209,7 +200,6 @@ var app = app || {};
 		},
 		resetToneline: function()  {
 			if (this._line.segments.length !== 0) {
-				// this.trigger('tonelineChange', this._line);
 				this.trigger('tonelineReset', this._line);
 			}
 			this._tones.length = 0;

@@ -41,6 +41,7 @@ var app = app || {};
 
 			this.listenTo(this.get('reference'), 'tonelineReset', this.updateReferenceLine);
 			this.listenTo(this.get('player'), 'tonelineReset', this.getPlayerScore);
+
 			this.listenTo(app.eventAgg, 'controls:startGame', function () {
 				this.set({ active: true });
 			});
@@ -82,7 +83,7 @@ var app = app || {};
 			console.log('game started');
 		},
 		getPlayerScore: function (line) {
-			if (typeof this.get('referenceLine') !== null) {
+			if (this.get('referenceLine') !== null) {
 
 				// console.log(this.get('referenceLine') == null);
 				var playerSize = line.getSize();

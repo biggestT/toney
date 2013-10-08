@@ -149,7 +149,6 @@ var audioContext;
 			this.once('soundfile:ready', this.initializeAudioGraph, this);
 			this.once('audiograph:ready', function () {
 				this.changeState(this._states.standby);
-				// app.eventAgg.trigger('spectrogram:ready'); // Tell the application that the spectrogram is ready
 			}.bind(this));
 
 			console.log(this.get('playing'));
@@ -163,8 +162,6 @@ var audioContext;
 					console.log('model started soundfile on behalf of controls');
 				}
 			});
-			// this.on('change:playing', this.inputToggle);
-			// this.listenTo(app.eventAgg, 'reference:reset', this.inputToggle);
 		},
 
 		// MICROPHONE METHODS
@@ -203,12 +200,9 @@ var audioContext;
 					this.changeState(this._states.microphone);
 				}
 			});
+			
 			this.listenTo(this._soundfile, 'reset', function () {
 
-				// console.log(this._soundfile.getAudioElement());
-				// this._soundfile = newSoundfile;
-				// this._soundfileInput = audioContext.createMediaElementSource(this._soundfile.getAudioElement());
-				// this.createSoundfileNode();
 			});
 		},
 		createSoundfileNode: function () {
